@@ -1,6 +1,6 @@
 # HanaZoom Frontend
 
-HanaZoom 프론트엔드는 Next.js 15.2.4 기반으로 구축된 우리 동네 주식 맛집 지도 서비스 / WTS 플랫폼 / 디지털 PB 상담 서비스의 웹 클라이언트입니다.
+Next.js 15.2.4 기반으로 구축된 우리 동네 주식 맛집 지도 서비스 / WTS 플랫폼 / 디지털 PB 상담 서비스의 웹 클라이언트입니다.
 
 ## 🛠 기술 스택
 
@@ -155,12 +155,6 @@ FE/
 └── styles/             # 스타일 파일
 ```
 
-## 🏗 시스템 아키텍처
-
-![프론트엔드 아키텍처](./assets/frontend-architecture.png)
-
-HanaZoom 프론트엔드는 모던 웹 아키텍처 패턴을 적용하여 설계되었습니다:
-
 ### 🔄 데이터 플로우
 
 1. **사용자 인터랙션**
@@ -226,67 +220,6 @@ HanaZoom 프론트엔드는 모던 웹 아키텍처 패턴을 적용하여 설�
 - **화상 상담**: WebRTC 기반 실시간 화상 통화
 - **상담 예약**: 일정 관리 및 예약 시스템
 
-## 🐛 문제 해결
-
-### 자주 발생하는 문제들
-
-1. **포트 충돌**
-   ```bash
-   # 포트 사용 중인 프로세스 확인
-   netstat -ano | findstr :3000
-   # 프로세스 종료
-   taskkill /PID <PID> /F
-   ```
-
-2. **의존성 설치 실패**
-   ```bash
-   # 캐시 정리 후 재설치
-   npm cache clean --force
-   rm -rf node_modules package-lock.json
-   npm install
-   ```
-
-3. **빌드 오류**
-   ```bash
-   # Next.js 캐시 정리
-   rm -rf .next
-   npm run build
-   ```
-
-4. **TypeScript 오류**
-   ```bash
-   # 타입 체크
-   npx tsc --noEmit
-   ```
-
-5. **백엔드 연결 실패**
-   ```bash
-   # 백엔드 서버 상태 확인
-   curl http://localhost:8080/health
-   ```
-
-### 개발 도구
-
-- **브라우저 개발자 도구**: React DevTools, Redux DevTools
-- **네트워크 모니터링**: WebSocket 연결 상태 확인
-- **성능 분석**: Next.js Analytics, Lighthouse
-
-## 🧪 테스트
-
-```bash
-# 단위 테스트 실행 (설정된 경우)
-npm run test
-
-# E2E 테스트 실행 (설정된 경우)
-npm run test:e2e
-
-# 타입 체크
-npx tsc --noEmit
-
-# 린트 검사
-npm run lint
-```
-
 ## 📦 빌드 및 배포
 
 ### 개발 빌드
@@ -332,25 +265,3 @@ docker run -p 3000:3000 hanazoom-frontend
 - **shadcn/ui**: 기본 UI 컴포넌트
 - **Radix UI**: 접근성 기반 프리미티브
 - **Tailwind CSS**: 유틸리티 우선 CSS 프레임워크
-
-## 🔧 성능 최적화
-
-### 현재 적용된 최적화
-- **Next.js 15**: App Router 기반 최적화
-- **이미지 최적화**: Next.js Image 컴포넌트
-- **코드 스플리팅**: 자동 라우트 기반 분할
-- **캐싱**: 정적 자산 캐싱 설정
-- **번들 최적화**: Tree shaking 및 압축
-
-### 추가 최적화 권장사항
-- **Service Worker**: PWA 기능 구현
-- **CDN**: 정적 자산 CDN 배포
-- **모니터링**: Web Vitals 추적
-
-## 📞 지원
-
-문제가 발생하거나 질문이 있으시면 개발팀에 문의해주세요.
-
----
-
-**참고**: 이 README는 개발 환경 설정을 위한 가이드입니다. 프로덕션 환경에서는 보안 설정을 추가로 확인하시기 바랍니다.
