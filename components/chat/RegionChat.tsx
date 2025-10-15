@@ -56,9 +56,9 @@ interface ChatMessage {
   memberName: string;
   content: string;
   createdAt: string;
-  showHeader?: boolean; 
-  senderId?: string; 
-  isMyMessage?: boolean; 
+  showHeader?: boolean; // 서버에서 보내는 추가 정보
+  senderId?: string; // 현재 사용자 식별용
+  isMyMessage?: boolean; // 내가 보낸 메시지 여부
   images?: string[];
   portfolioStocks?: any[];
 }
@@ -71,10 +71,10 @@ interface RegionChatProps {
 type WebSocketReadyState = "connecting" | "open" | "closed";
 
 const MAX_RECONNECT_ATTEMPTS = 5;
-const RECONNECT_DELAY = 500; 
-const CONNECTION_TIMEOUT = 3000; 
+const RECONNECT_DELAY = 500; // 재연결 지연 시간 더 단축
+const CONNECTION_TIMEOUT = 3000; // 연결 타임아웃 단축
 
-
+// WebSocket 상태 코드에 대한 설명
 const WS_CLOSE_CODES: Record<number, string> = {
   1000: "정상 종료",
   1001: "서버 종료",
@@ -108,7 +108,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
   const lastActionTimestamp = useRef<Record<string, number>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const receivedMessageIds = useRef(new Set<string>());
-  const ACTION_DEBOUNCE_MS = 2000; 
+  const ACTION_DEBOUNCE_MS = 2000; // 동일 액션 간 최소 간격
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
@@ -147,7 +147,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
     scrollToBottom();
   }, [messages]);
 
-
+  // 이전 채팅 메시지 로드
   const loadChatHistory = useCallback(async () => {
     if (isLoadingHistory || hasLoadedHistory) return;
 
@@ -155,7 +155,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
     try {
       console.log(`📥 이전 채팅 메시지 로드 시작: regionId=${regionId}`);
 
-
+      // 현재 사용자 ID 가져오기
       const currentUserIdValue = useAuthStore.getState().getCurrentUserId();
       console.log(`👤 현재 사용자 ID: ${currentUserIdValue}`);
 
@@ -164,10 +164,10 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
       if (historyMessages && historyMessages.length > 0) {
         console.log(`✅ ${historyMessages.length}개의 이전 메시지 로드 완료`);
 
-
+        // API 메시지를 ChatMessage 형식으로 변환
         const convertedMessages: ChatMessage[] = historyMessages.map(
           (msg: ApiChatMessage) => {
-
+            // 현재 사용자가 보낸 메시지인지 확인
             const isMyMessage: boolean =
               !!(currentUserIdValue && msg.memberId === currentUserIdValue);
 
@@ -191,7 +191,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
           }
         );
 
-
+        // 기존 메시지와 병합 (중복 제거)
         setMessages((prevMessages) => {
           const existingIds = new Set(prevMessages.map((m) => m.id));
           const newMessages = convertedMessages.filter(
@@ -245,7 +245,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
         setReadyState("connecting");
         setError(null);
 
-
+        // Clear any existing timeouts
         if (reconnectTimeoutId.current) {
           clearTimeout(reconnectTimeoutId.current);
         }
@@ -253,7 +253,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
           clearTimeout(connectionTimeoutId.current);
         }
 
-
+        // Set connection timeout
         connectionTimeoutId.current = setTimeout(() => {
           if (ws.current?.readyState !== WebSocket.OPEN) {
             console.log("WebSocket connection timeout");
@@ -262,21 +262,21 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
           }
         }, CONNECTION_TIMEOUT);
 
-
+        // 토큰 유효성 검사
         if (!token || token.trim() === '') {
           console.error("WebSocket connection failed: No token provided");
           setError("인증 토큰이 없습니다. 다시 로그인해주세요.");
           return;
         }
 
-
+        // Create new WebSocket connection with encoded token
         const encodedToken = encodeURIComponent(token);
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
         const host =
           window.location.hostname === "localhost"
             ? "localhost:8080"
             : window.location.host;
-        const wsUrl = `${protocol}
+        const wsUrl = `${protocol}//${host}/ws/chat/region?regionId=${regionId}&token=${encodedToken}`;
 
         console.log(
           "Connecting to WebSocket:",
@@ -292,19 +292,19 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
 
         ws.current = new WebSocket(wsUrl);
 
-
+        // Set binary type to support potential binary messages
         ws.current.binaryType = "arraybuffer";
 
         ws.current.onopen = () => {
           console.log("🔌 WebSocket 연결 성공!");
           setReadyState("open");
-          setError(null); 
+          setError(null); // 연결 성공 시 오류 상태 초기화
           reconnectAttempts.current = 0;
           if (connectionTimeoutId.current) {
             clearTimeout(connectionTimeoutId.current);
           }
 
-
+          // 연결 성공 즉시 PING 전송 (서버 응답 확인)
           setTimeout(() => {
             sendHeartbeat();
           }, 100);
@@ -314,7 +314,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
           try {
             const data = JSON.parse(event.data);
 
-
+            // 타이핑 상태 메시지 처리 (content가 없어도 처리)
             if (data.type === "TYPING") {
               if (data.isTyping) {
                 setTypingUsers((prev) => new Set(prev).add(data.memberName));
@@ -328,9 +328,9 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
               return;
             }
 
-
+            // heartbeat 메시지 처리
             if (data.type === "PING") {
-
+              // 서버에서 PING을 보내면 PONG으로 응답
               sendHeartbeat();
               return;
             }
@@ -340,13 +340,13 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
               return;
             }
 
-
+            // 온라인 사용자 목록 업데이트는 최우선 처리 (content 없어도 처리)
             if (data.type === "USERS" && Array.isArray(data.users)) {
               setOnlineUsers(data.users);
               return;
             }
 
-
+            // 보유종목이 있는 경우 content가 없어도 처리
             if (
               !data ||
               ((!data.content || data.content.trim() === "") &&
@@ -355,12 +355,12 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
               return;
             }
 
-
+            // 백호환: 일반 메시지에 users 배열이 동반된 경우에도 반영
             if (Array.isArray(data.users)) {
               setOnlineUsers(data.users);
             }
 
-
+            // 내가 보낸 메시지인지 판단
             const userId =
               currentUserId || useAuthStore.getState().getCurrentUserId();
             if (data.senderId && userId) {
@@ -370,15 +370,15 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
             if (!receivedMessageIds.current.has(data.id)) {
               receivedMessageIds.current.add(data.id);
 
-
+              // 보유종목 정보가 있는지 확인
               if (data.portfolioStocks) {
-
+                // portfolioStocks가 배열이 아닌 경우 처리
                 if (!Array.isArray(data.portfolioStocks)) {
-
+                  // 빈 배열로 초기화 (데이터 손실 방지)
                   data.portfolioStocks = [];
                 }
               } else if (data.content === "보유종목을 공유했습니다.") {
-
+                // 임시로 하드코딩된 보유종목 데이터 추가 (테스트용)
                 data.portfolioStocks = [
                   {
                     id: 1,
@@ -418,15 +418,15 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
 
           if (!isClosing.current) {
             if (event.code === 1006) {
-
+              // 비정상 종료의 경우 즉시 재연결 시도
               console.log("🔄 비정상 종료 - 재연결 시도");
               handleReconnect(token);
             } else if (event.code === 1000) {
-
+              // 정상 종료의 경우 재연결 시도하지 않음
               console.log("✅ 정상 종료 - 재연결하지 않음");
               setReadyState("closed");
             } else {
-
+              // 그 외의 경우 재연결 시도
               console.log("🔄 기타 종료 - 재연결 시도");
               handleReconnect(token);
             }
@@ -441,13 +441,13 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
             url: ws.current?.url?.replace(/token=[^&]*/, 'token=REDACTED')
           });
 
-
+          // 에러 상태 설정
           setError("WebSocket 연결에 오류가 발생했습니다.");
           setReadyState("closed");
 
-
+          // 연결 상태가 CONNECTING인 경우에만 재연결 시도
           if (ws.current?.readyState === WebSocket.CONNECTING) {
-
+            // 토큰 만료 가능성이 있으므로 토큰 갱신 후 재연결 시도
             setTimeout(async () => {
               try {
                 const refreshResult = await refreshAccessToken();
@@ -497,7 +497,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
 
       reconnectTimeoutId.current = setTimeout(() => {
         connectWebSocket(token);
-      }, RECONNECT_DELAY * Math.min(reconnectAttempts.current, 2)); 
+      }, RECONNECT_DELAY * Math.min(reconnectAttempts.current, 2)); // 최대 지연 시간을 2배로 제한
     },
     [connectWebSocket, isActionAllowed]
   );
@@ -523,7 +523,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
         return;
       }
 
-
+      // 토큰 만료 시간 확인 (JWT 디코딩)
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const currentTime = Math.floor(Date.now() / 1000);
@@ -543,7 +543,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
         }
       } catch (decodeError) {
         console.warn("Could not decode token for expiration check:", decodeError);
-
+        // 토큰 디코딩 실패해도 연결 시도
       }
 
       console.log("Token obtained, connecting to WebSocket...");
@@ -555,25 +555,25 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
   }, [connectWebSocket]);
 
   useEffect(() => {
-
+    // 현재 사용자 ID를 초기화
     const userId = useAuthStore.getState().getCurrentUserId();
     if (userId) {
       setCurrentUserId(userId);
       console.log(`✅ 현재 사용자 ID 초기화: ${userId}`);
     }
 
-
+    // WebSocket 연결 초기화
     initializeWebSocket();
 
-
+    // 이전 채팅 메시지 로드
     loadChatHistory();
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-
+        // 페이지가 숨겨질 때는 연결을 유지
         console.log("페이지 비활성화 - 연결 유지");
       } else {
-
+        // 페이지가 다시 보일 때 연결 상태 확인
         if (ws.current?.readyState !== WebSocket.OPEN) {
           console.log("페이지 활성화 - 재연결 시도");
           initializeWebSocket();
@@ -598,7 +598,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
     };
   }, [closeWebSocket, initializeWebSocket, loadChatHistory]);
 
-
+  // Heartbeat mechanism
   const heartbeatInterval = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const sendHeartbeat = useCallback(() => {
@@ -627,7 +627,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
       return;
     }
 
-
+    // 타이핑 상태 초기화
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
@@ -635,7 +635,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
       ws.current.send(JSON.stringify({ type: "TYPING", isTyping: false }));
     }
 
-
+    // 이미지가 있는 경우 Base64로 변환
     if (selectedImages.length > 0) {
       const imagePromises = selectedImages.map((file) => {
         return new Promise<string>((resolve) => {
@@ -656,11 +656,11 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
         );
       });
     } else {
-
+      // 표시용 토큰 제거 후 순수 텍스트 구성
       const tokenRegex = /\s?\[PORTFOLIO:[^\]]+\]/g;
       const cleanMessage = newMessage.replace(tokenRegex, "").trim();
 
-
+      // 선택기에서 담아둔 원본 포트폴리오 데이터를 그대로 전송
       const portfolioStocks: PortfolioStock[] = attachedPortfolioStocks;
       const messageContent =
         cleanMessage ||
@@ -677,10 +677,10 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
             })
           );
         } catch (error) {
-
+          // ignore
         }
       } else {
-
+        // ignore
       }
     }
 
@@ -713,18 +713,18 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
   };
 
   const renderMessageContent = (content: string) => {
-
+    // @멘션을 클릭 가능한 링크로 변환
     const mentionRegex = /@([가-힣a-zA-Z0-9]+)/g;
     const parts = content.split(mentionRegex);
 
     return parts.map((part, index) => {
       if (index % 2 === 1) {
-
+        // 멘션 부분 - 주식명으로 검색하여 심볼 찾기
         return (
           <button
             key={index}
             onClick={() => {
-
+              // 주식명으로 검색하여 심볼 찾기
               fetch(`/api/v1/stocks/search?query=${encodeURIComponent(part)}`)
                 .then((response) => response.json())
                 .then((data) => {
@@ -762,7 +762,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
 
   const handleTyping = () => {
     if (ws.current?.readyState === WebSocket.OPEN) {
-
+      // 타이핑 시작 메시지 전송
       ws.current.send(JSON.stringify({ type: "TYPING", isTyping: true }));
     }
 
@@ -770,7 +770,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
       clearTimeout(typingTimeoutRef.current);
     }
     typingTimeoutRef.current = setTimeout(() => {
-
+      // 타이핑 종료 메시지 전송
       if (ws.current?.readyState === WebSocket.OPEN) {
         ws.current.send(JSON.stringify({ type: "TYPING", isTyping: false }));
       }
@@ -779,7 +779,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
 
   const handleEmojiSelect = (emoji: string) => {
     setNewMessage((prev) => prev + emoji);
-
+    // 이모지 추가 후 타이핑 상태 업데이트
     handleTyping();
   };
 
@@ -799,7 +799,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
     setMentionQuery("");
     setMentionPosition(0);
 
-
+    // 멘션 추가 후 타이핑 상태 업데이트
     handleTyping();
   };
 
@@ -807,7 +807,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
     const value = e.target.value;
     setNewMessage(value);
 
-
+    // @ 멘션 감지
     const lastAtSymbol = value.lastIndexOf("@");
     if (lastAtSymbol !== -1) {
       const query = value.substring(lastAtSymbol + 1);
@@ -825,13 +825,13 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
     handleTyping();
   };
 
-
+  // 사진 첨부 처리
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
 
     const imageFiles = Array.from(files).filter(
-      (file) => file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024 
+      (file) => file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024 // 5MB 제한
     );
 
     if (imageFiles.length === 0) {
@@ -841,28 +841,28 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
 
     setSelectedImages((prev) => [...prev, ...imageFiles]);
 
-
+    // 미리보기 URL 생성
     const newPreviewUrls = imageFiles.map((file) => URL.createObjectURL(file));
     setImagePreviewUrls((prev) => [...prev, ...newPreviewUrls]);
   };
 
-
+  // 사진 제거
   const removeImage = (index: number) => {
     setSelectedImages((prev) => prev.filter((_, i) => i !== index));
     setImagePreviewUrls((prev) => {
-      URL.revokeObjectURL(prev[index]); 
+      URL.revokeObjectURL(prev[index]); // 메모리 해제
       return prev.filter((_, i) => i !== index);
     });
   };
 
-
+  // 보유종목 인증 버튼 클릭 시
   const handlePortfolioVerification = () => {
     setShowPortfolioSelector(true);
   };
 
-
+  // 보유종목 선택 시
   const handleSelectPortfolioStock = (stock: PortfolioStock) => {
-
+    // 실제 데이터는 상태로 보관하고, 입력창에는 표시용 토큰만 추가
     const displayToken = ` [PORTFOLIO:${stock.stockSymbol}:${stock.stockName}]`;
     setNewMessage((prev) => (prev + displayToken).trimStart());
     setAttachedPortfolioStocks((prev) => [...prev, stock]);
@@ -888,6 +888,58 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
       <Card className="w-full flex flex-col">
         <CardHeader className="pb-3 shrink-0">
           <div className="flex flex-col space-y-3">
+            {/* 상단 헤더 */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-semibold">{regionName}</span>
+                <Badge variant="outline" className="ml-2">
+                  채팅방
+                </Badge>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setIsGuideOpen(!isGuideOpen)}
+                >
+                  <Info
+                    className={`h-4 w-4 transition-colors ${
+                      isGuideOpen ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  />
+                </Button>
+                <div className="text-sm">
+                  {readyState === "open" ? (
+                    <Badge
+                      variant="secondary"
+                      className="flex items-center space-x-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                    >
+                      <Wifi className="w-3 h-3" />
+                      <span>연결됨</span>
+                    </Badge>
+                  ) : readyState === "connecting" ? (
+                    <Badge
+                      variant="secondary"
+                      className="flex items-center space-x-1 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+                    >
+                      <span className="animate-spin">⌛</span>
+                      <span>연결 중...</span>
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="destructive"
+                      className="flex items-center space-x-1"
+                    >
+                      <WifiOff className="w-3 h-3" />
+                      <span>연결 끊김</span>
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 이용 안내 */}
             <Collapsible
               open={isGuideOpen}
               onOpenChange={setIsGuideOpen}
@@ -917,6 +969,56 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
               </CollapsibleContent>
             </Collapsible>
 
+            {/* 참여자 목록 토글 */}
+            <Collapsible
+              open={isUserListOpen}
+              onOpenChange={setIsUserListOpen}
+              className="w-full"
+            >
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full flex items-center justify-between hover:bg-accent"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-4 h-4" />
+                    <span>실시간 참여자</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {onlineUsers.length}명
+                    </Badge>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      isUserListOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2">
+                <ScrollArea className="h-24 rounded-lg border bg-muted/50 p-2">
+                  <div className="flex flex-wrap gap-2">
+                    {onlineUsers.sort().map((user) => (
+                      <Badge
+                        key={user}
+                        variant="secondary"
+                        className="text-xs bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 border border-blue-500/30 text-blue-700 dark:text-blue-300 font-medium"
+                      >
+                        {user}
+                      </Badge>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Separator className="my-1" />
+          </div>
+        </CardHeader>
+
+        <CardContent className="flex-1 flex flex-col p-4 min-h-[400px]">
+          <div className="flex-1 overflow-y-auto space-y-3 mb-4 p-2 bg-background/50 rounded-lg">
+            {/* 이전 채팅 로딩 인디케이터 */}
             {isLoadingHistory && (
               <div className="flex justify-center py-4">
                 <div className="text-sm text-muted-foreground flex items-center space-x-2">
@@ -932,10 +1034,10 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
                   (message) => message.content && message.content.trim() !== ""
                 )
                 .map((message, index) => {
-
+                  // 현재 사용자의 메시지인지 확인
                   const isMyMessage = message.isMyMessage === true;
 
-
+                  // 연속된 메시지인지 확인 (같은 사용자가 보낸 연속 메시지)
                   const prevMessage =
                     index > 0
                       ? messages.filter(
@@ -951,7 +1053,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
                     message.messageType !== "ENTER" &&
                     message.messageType !== "LEAVE";
 
-
+                  // showHeader 결정: 연속 메시지가 아니고, 시스템 메시지가 아닌 경우에만 헤더 표시
                   const showHeader =
                     !isConsecutiveMessage &&
                     message.messageType !== "SYSTEM" &&
@@ -1040,7 +1142,7 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
                                           alt={`첨부 이미지 ${imgIndex + 1}`}
                                           className="max-w-[200px] max-h-[200px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
                                           onClick={() => {
-
+                                            // 이미지 확대 보기 (임시)
                                             window.open(image, "_blank");
                                           }}
                                         />
@@ -1126,6 +1228,122 @@ export default function RegionChat({ regionId, regionName }: RegionChatProps) {
             </div>
           )}
 
+          {/* 선택된 이미지 미리보기 */}
+          {imagePreviewUrls.length > 0 && (
+            <div className="mb-4 p-3 bg-muted/30 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  첨부할 이미지 ({imagePreviewUrls.length}개)
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedImages([]);
+                    setImagePreviewUrls([]);
+                  }}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {imagePreviewUrls.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={url}
+                      alt={`미리보기 ${index + 1}`}
+                      className="w-16 h-16 object-cover rounded-lg border"
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-5 w-5 rounded-full"
+                      onClick={() => removeImage(index)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center space-x-2 shrink-0 pt-3 border-t">
+            <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              onClick={handlePortfolioVerification}
+              title="보유종목 인증"
+            >
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              title="사진 첨부"
+            >
+              <Image className="h-5 w-5 text-muted-foreground" />
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <div className="flex-1 relative">
+              {selectedMessage && (
+                <div className="absolute -top-8 left-0 right-0 bg-muted/50 text-xs p-1 rounded flex items-center justify-between">
+                  <span className="truncate">
+                    답장:{" "}
+                    {messages.find((m) => m.id === selectedMessage)?.content}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 hover:bg-transparent"
+                    onClick={() => setSelectedMessage(null)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+
+              {showMention && (
+                <StockMention
+                  query={mentionQuery}
+                  onSelect={handleMentionSelect}
+                  onClose={() => setShowMention(false)}
+                />
+              )}
+
+              <PortfolioStockSelector
+                isOpen={showPortfolioSelector}
+                onClose={() => setShowPortfolioSelector(false)}
+                onSelect={handleSelectPortfolioStock}
+              />
+
+              <Input
+                value={newMessage}
+                onChange={handleInputChange}
+                onKeyPress={handleKeyPress}
+                placeholder="메시지를 입력하세요... (@로 주식 검색)"
+                disabled={readyState !== "open"}
+                className="pr-20 bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary/30"
+              />
+              <div className="absolute right-0 top-0 h-full flex items-center pr-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-transparent"
+                  onClick={() => {
+                    /* TODO: Add mention */
                   }}
                 >
                   <AtSign className="h-4 w-4 text-muted-foreground" />

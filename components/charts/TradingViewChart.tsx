@@ -53,7 +53,7 @@ export function TradingViewChart({
   const [hoveredCandle, setHoveredCandle] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
-
+  // 차트 데이터 로딩
   const loadChartData = async (period: ChartPeriod) => {
     setLoading(true);
     setError(null);
@@ -63,19 +63,19 @@ export function TradingViewChart({
 
       switch (period) {
         case "daily":
-          data = await getDailyChartData(stockSymbol, 2500); 
+          data = await getDailyChartData(stockSymbol, 2500); // 10년치
           break;
         case "weekly":
-          data = await getWeeklyChartData(stockSymbol, 520); 
+          data = await getWeeklyChartData(stockSymbol, 520); // 10년치
           break;
         case "monthly":
-          data = await getMonthlyChartData(stockSymbol, 120); 
+          data = await getMonthlyChartData(stockSymbol, 120); // 10년치
           break;
         default:
-          data = await getDailyChartData(stockSymbol, 2500); 
+          data = await getDailyChartData(stockSymbol, 2500); // 10년치
       }
 
-
+      // 날짜 순으로 정렬
       data.sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
@@ -90,18 +90,18 @@ export function TradingViewChart({
     }
   };
 
-
+  // 캔들스틱 색상
   const getCandleColor = (isUp: boolean) => {
     return isUp ? "#ef4444" : "#3b82f6";
   };
 
-
+  // 거래량 색상
   const getVolumeColor = (item: ChartDataDto) => {
     const isUp = item.closePrice >= item.openPrice;
     return isUp ? "#ef4444" : "#3b82f6";
   };
 
-
+  // 이동평균선 계산
   const calculateMA = (period: number) => {
     if (chartData.length < period) return [];
 
@@ -115,7 +115,7 @@ export function TradingViewChart({
     return ma;
   };
 
-
+  // RSI 계산
   const calculateRSI = (period: number = 14) => {
     if (chartData.length < period + 1) return [];
 
@@ -141,7 +141,7 @@ export function TradingViewChart({
     return rsi;
   };
 
-
+  // 볼린저 밴드 계산
   const calculateBollingerBands = (
     period: number = 20,
     multiplier: number = 2
@@ -167,7 +167,7 @@ export function TradingViewChart({
     return { upper, middle: ma, lower };
   };
 
-
+  // 가격 변화 계산
   const getPriceChange = () => {
     if (chartData.length < 2) return { change: 0, changePercent: 0 };
 
@@ -179,12 +179,12 @@ export function TradingViewChart({
     return { change, changePercent };
   };
 
-
+  // 기간 변경 시 데이터 재로딩
   useEffect(() => {
     loadChartData(selectedPeriod);
   }, [selectedPeriod, stockSymbol]);
 
-
+  // 전체화면 토글
   const toggleFullscreen = () => {
     if (chartRef.current) {
       if (!isFullscreen) {
@@ -196,7 +196,7 @@ export function TradingViewChart({
     }
   };
 
-
+  // 차트 새로고침
   const refreshChart = () => {
     loadChartData(selectedPeriod);
   };
@@ -247,6 +247,54 @@ export function TradingViewChart({
   return (
     <Card className={className} ref={chartRef}>
       <CardHeader className="space-y-4">
+        {/* 헤더 */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg">
+              <Activity className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold">{stockSymbol}</CardTitle>
+              <p className="text-sm text-gray-500">실시간 차트</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="px-3 py-1">
+              {selectedPeriod === "daily"
+                ? "일봉"
+                : selectedPeriod === "weekly"
+                ? "주봉"
+                : "월봉"}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSettings(!showSettings)}
+              className="h-9 w-9 p-0"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshChart}
+              className="h-9 w-9 p-0"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleFullscreen}
+              className="h-9 w-9 p-0"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* 가격 정보 카드 */}
         {chartData.length > 0 && (
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-4 rounded-xl border border-blue-200 dark:border-blue-700">
@@ -339,6 +387,66 @@ export function TradingViewChart({
           </div>
         )}
 
+        {/* 보조지표 설정 */}
+        {showSettings && (
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border">
+            <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              보조지표 설정
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={indicators.showMA}
+                  onChange={(e) =>
+                    setIndicators((prev) => ({
+                      ...prev,
+                      showMA: e.target.checked,
+                    }))
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  이동평균선
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={indicators.showRSI}
+                  onChange={(e) =>
+                    setIndicators((prev) => ({
+                      ...prev,
+                      showRSI: e.target.checked,
+                    }))
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  RSI
+                </span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={indicators.showBollinger}
+                  onChange={(e) =>
+                    setIndicators((prev) => ({
+                      ...prev,
+                      showBollinger: e.target.checked,
+                    }))
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  볼린저 밴드
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* 기간 선택기 */}
         <PeriodSelector
           selectedPeriod={selectedPeriod}
           onPeriodChange={setSelectedPeriod}
@@ -346,6 +454,12 @@ export function TradingViewChart({
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* 메인 차트 */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <div className="h-[400px] relative">
+            {chartData.length > 0 ? (
+              <svg width="100%" height="100%" className="overflow-visible">
+                {/* 그리드 배경 */}
                 <defs>
                   <pattern
                     id="grid"
@@ -364,6 +478,53 @@ export function TradingViewChart({
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid)" />
 
+                {/* 볼린저 밴드 */}
+                {indicators.showBollinger && bollinger.upper.length > 0 && (
+                  <>
+                    <path
+                      d={bollinger.upper
+                        .map((value, index) => {
+                          const x =
+                            50 + (index * 700) / (bollinger.upper.length - 1);
+                          const y =
+                            50 +
+                            ((Math.max(...chartData.map((d) => d.highPrice)) -
+                              value) *
+                              300) /
+                              (Math.max(...chartData.map((d) => d.highPrice)) -
+                                Math.min(...chartData.map((d) => d.lowPrice)));
+                          return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+                        })
+                        .join(" ")}
+                      fill="none"
+                      stroke="#fbbf24"
+                      strokeWidth="2"
+                      opacity="0.4"
+                    />
+                    <path
+                      d={bollinger.lower
+                        .map((value, index) => {
+                          const x =
+                            50 + (index * 700) / (bollinger.lower.length - 1);
+                          const y =
+                            50 +
+                            ((Math.max(...chartData.map((d) => d.highPrice)) -
+                              value) *
+                              300) /
+                              (Math.max(...chartData.map((d) => d.highPrice)) -
+                                Math.min(...chartData.map((d) => d.lowPrice)));
+                          return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+                        })
+                        .join(" ")}
+                      fill="none"
+                      stroke="#fbbf24"
+                      strokeWidth="2"
+                      opacity="0.4"
+                    />
+                  </>
+                )}
+
+                {/* 이동평균선 */}
                 {indicators.showMA && (
                   <>
                     {ma5.length > 0 && (
@@ -422,6 +583,37 @@ export function TradingViewChart({
                   </>
                 )}
 
+                {/* 캔들스틱 */}
+                {chartData.map((item, index) => {
+                  const isUp = item.closePrice >= item.openPrice;
+                  const candleColor = getCandleColor(isUp);
+
+                  const x = 50 + (index * 700) / (chartData.length - 1);
+                  const candleWidth = Math.max(
+                    8,
+                    (700 / chartData.length) * 0.8
+                  );
+
+                  const maxPrice = Math.max(
+                    ...chartData.map((d) => d.highPrice)
+                  );
+                  const minPrice = Math.min(
+                    ...chartData.map((d) => d.lowPrice)
+                  );
+                  const priceRange = maxPrice - minPrice;
+                  const yScale = 300 / priceRange;
+
+                  const highY = 50 + (maxPrice - item.highPrice) * yScale;
+                  const lowY = 50 + (maxPrice - item.lowPrice) * yScale;
+                  const openY = 50 + (maxPrice - item.openPrice) * yScale;
+                  const closeY = 50 + (maxPrice - item.closePrice) * yScale;
+
+                  const bodyTop = Math.min(openY, closeY);
+                  const bodyHeight = Math.max(Math.abs(closeY - openY), 2);
+
+                  return (
+                    <g key={`candle-${index}`}>
+                      {/* 고가-저가 선 */}
                       <line
                         x1={x + candleWidth / 2}
                         y1={highY}
@@ -432,6 +624,21 @@ export function TradingViewChart({
                         opacity="0.8"
                       />
 
+                      {/* 캔들 몸통 */}
+                      <rect
+                        x={x}
+                        y={bodyTop}
+                        width={candleWidth}
+                        height={bodyHeight}
+                        fill={candleColor}
+                        stroke={candleColor}
+                        rx="2"
+                        onMouseEnter={() => setHoveredCandle(index)}
+                        onMouseLeave={() => setHoveredCandle(null)}
+                        style={{ cursor: "pointer" }}
+                      />
+
+                      {/* 툴팁 */}
                       {hoveredCandle === index && (
                         <g>
                           <rect
@@ -504,6 +711,41 @@ export function TradingViewChart({
           </div>
         </div>
 
+        {/* 거래량 차트 */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+            거래량
+          </div>
+          <div className="h-32 relative">
+            {chartData.length > 0 && (
+              <svg width="100%" height="100%" className="overflow-visible">
+                {chartData.map((item, index) => {
+                  const x = 50 + (index * 700) / (chartData.length - 1);
+                  const barWidth = Math.max(4, (700 / chartData.length) * 0.8);
+
+                  const maxVolume = Math.max(...chartData.map((d) => d.volume));
+                  const volumeHeight = (item.volume / maxVolume) * 100;
+                  const volumeY = 120 - volumeHeight;
+
+                  return (
+                    <rect
+                      key={`volume-${index}`}
+                      x={x}
+                      y={volumeY}
+                      width={barWidth}
+                      height={volumeHeight}
+                      fill={getVolumeColor(item)}
+                      opacity="0.7"
+                      rx="2"
+                    />
+                  );
+                })}
+              </svg>
+            )}
+          </div>
+        </div>
+
+        {/* RSI 차트 */}
         {indicators.showRSI && rsi.length > 0 && (
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
@@ -511,6 +753,36 @@ export function TradingViewChart({
             </div>
             <div className="h-32 relative">
               <svg width="100%" height="100%" className="overflow-visible">
+                {/* RSI 기준선 */}
+                <line
+                  x1="0"
+                  y1="20"
+                  x2="100%"
+                  y2="20"
+                  stroke="#ef4444"
+                  strokeWidth="1"
+                  opacity="0.5"
+                />
+                <line
+                  x1="0"
+                  y1="80"
+                  x2="100%"
+                  y2="80"
+                  stroke="#ef4444"
+                  strokeWidth="1"
+                  opacity="0.5"
+                />
+                <line
+                  x1="0"
+                  y1="50"
+                  x2="100%"
+                  y2="50"
+                  stroke="#64748b"
+                  strokeWidth="1"
+                  opacity="0.3"
+                />
+
+                {/* RSI 라인 */}
                 <path
                   d={rsi
                     .map((value, index) => {

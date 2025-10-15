@@ -9,18 +9,18 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
+// 금융 캘린더 관련 타입과 API는 삭제됨 - 더미 데이터만 사용
 
-
-
+// 금융 일정 아이템 타입 정의
 interface FinancialScheduleItem {
-  date: string; 
-  dayOfWeek: string; 
-  time: string; 
-  indicator: string; 
-  importance: string; 
-  country: string; 
-  previous?: string; 
-  forecast?: string; 
+  date: string; // 발표 날짜 (YYYY-MM-DD)
+  dayOfWeek: string; // 요일
+  time: string; // 발표 시간
+  indicator: string; // 지표명
+  importance: string; // 중요도
+  country: string; // 국가
+  previous?: string; // 이전 값
+  forecast?: string; // 예상 값
 }
 
 interface KoreaIndicatorCardProps {
@@ -39,10 +39,10 @@ export function KoreaIndicatorCard({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-
+    // 더미 데이터 설정 (실제 API 연동이 삭제되어 더미 데이터만 표시)
     setLoading(true);
 
-
+    // 더미 금융 일정 데이터
     const dummyIndicators: FinancialScheduleItem[] = [
       {
         date: "2025-09-29",
@@ -76,13 +76,13 @@ export function KoreaIndicatorCard({
       },
     ];
 
-
+    // 더미 데이터 설정
     setTimeout(() => {
       setIndicators(
         maxItems ? dummyIndicators.slice(0, maxItems) : dummyIndicators
       );
       setLoading(false);
-    }, 500); 
+    }, 500); // 로딩 효과를 위한 지연
   }, [maxItems]);
 
   const getImportanceIcon = (importance: string) => {

@@ -15,7 +15,7 @@ export default function KakaoCallbackPage() {
   const [hasProcessed, setHasProcessed] = useState(false);
 
   useEffect(() => {
-
+    // 이미 로그인된 사용자는 홈페이지로 리다이렉트 (단, step-up이라면 계속 진행)
     const stateRaw = searchParams.get("state");
     let desiredRedirect: string | null = null;
     let isStepUp = false;
@@ -33,7 +33,7 @@ export default function KakaoCallbackPage() {
     }
 
     const handleKakaoCallback = async () => {
-
+      // 중복 처리 방지
       if (hasProcessed) {
         return;
       }
@@ -51,10 +51,10 @@ export default function KakaoCallbackPage() {
           throw new Error("인증 코드를 받지 못했습니다.");
         }
 
-
+        // 백엔드로 카카오 로그인 요청
         const response = await api.post(API_ENDPOINTS.kakaoLogin, {
           code,
-          redirectUri: "http:
+          redirectUri: "http://localhost:3000/auth/kakao/callback",
         });
 
         if (!response.data.success) {
@@ -65,7 +65,7 @@ export default function KakaoCallbackPage() {
 
         const { data } = response.data;
 
-
+        // 로그인 데이터 저장
         await setLoginData(data.accessToken, data.refreshToken, {
           id: data.id,
           name: data.name,
@@ -75,22 +75,22 @@ export default function KakaoCallbackPage() {
           longitude: data.longitude,
         });
 
-
+        // step-up 성공 시 최근 검증 시각 기록
         if (isStepUp) {
           try {
             sessionStorage.setItem("recentlyVerifiedAt", Date.now().toString());
           } catch {}
         }
 
-
-
+        // 성공 메시지 제거 (모든 경우에 SweetAlert 비활성화)
+        // step-up 검증 시에는 아무 알림 없이 바로 리다이렉트
 
         if (isStepUp && desiredRedirect) {
           router.replace(desiredRedirect);
           return;
         }
 
-
+        // 위치 정보 유무에 따른 분기 (기존 동작)
         if (!data.address || !data.latitude || !data.longitude) {
           router.replace("/auth/location-setup");
         } else {
@@ -107,7 +107,7 @@ export default function KakaoCallbackPage() {
           confirmButtonColor: "#10b981",
         });
 
-
+        // 로그인 페이지로 리다이렉트
         router.replace("/login");
       } finally {
         setIsProcessing(false);

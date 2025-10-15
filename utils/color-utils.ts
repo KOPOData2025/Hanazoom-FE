@@ -4,6 +4,9 @@ import {
   defaultStockColor,
 } from "@/data/stock-brand-colors";
 
+/**
+ * 주식 종목 코드로 브랜드 색상 정보를 가져오는 함수
+ */
 export function getBrandColorByStock(stockCode: string, stockName?: string) {
   const brandColor = getStockBrandColor(stockCode);
 
@@ -11,6 +14,9 @@ export function getBrandColorByStock(stockCode: string, stockName?: string) {
   return brandColor;
 }
 
+/**
+ * 업종으로 브랜드 색상 정보를 가져오는 함수
+ */
 export function getBrandColorBySector(sector: string) {
   const brandColor = getSectorBrandColor(sector);
 
@@ -18,6 +24,9 @@ export function getBrandColorBySector(sector: string) {
   return brandColor;
 }
 
+/**
+ * CSS 스타일 객체 생성 함수
+ */
 export function createBrandStyle(brandColor: any) {
   return {
     background: brandColor.gradient,
@@ -26,6 +35,9 @@ export function createBrandStyle(brandColor: any) {
   };
 }
 
+/**
+ * Tailwind CSS 클래스 생성 함수
+ */
 export function createBrandClasses(
   brandColor: any,
   additionalClasses: string = ""
@@ -33,11 +45,17 @@ export function createBrandClasses(
   return `text-white shadow-lg ${additionalClasses}`;
 }
 
+/**
+ * 인라인 스타일로 브랜드 색상 적용
+ */
 export function applyBrandStyle(brandColor: any, element: HTMLElement) {
   element.style.background = brandColor.gradient;
   element.style.color = "#FFFFFF";
 }
 
+/**
+ * 동적 색상 테마 생성
+ */
 export function createColorTheme(brandColor: any) {
   return {
     primary: brandColor.primary,
@@ -46,13 +64,16 @@ export function createColorTheme(brandColor: any) {
     text: "#FFFFFF",
     textSecondary: "#E5E7EB",
     border: brandColor.primary,
-    hover: `${brandColor.primary}CC`, 
-    active: `${brandColor.secondary}DD`, 
+    hover: `${brandColor.primary}CC`, // 80% 투명도
+    active: `${brandColor.secondary}DD`, // 87% 투명도
   };
 }
 
+/**
+ * 색상 대비 확인 (접근성)
+ */
 export function getContrastRatio(color1: string, color2: string): number {
-
+  // 간단한 대비 계산 (실제로는 더 복잡한 계산이 필요)
   const hex1 = color1.replace("#", "");
   const hex2 = color2.replace("#", "");
 
@@ -73,6 +94,9 @@ export function getContrastRatio(color1: string, color2: string): number {
   return (brightest + 0.05) / (darkest + 0.05);
 }
 
+/**
+ * 접근성을 고려한 텍스트 색상 결정
+ */
 export function getAccessibleTextColor(backgroundColor: string): string {
   const contrastWithWhite = getContrastRatio(backgroundColor, "#FFFFFF");
   const contrastWithBlack = getContrastRatio(backgroundColor, "#000000");

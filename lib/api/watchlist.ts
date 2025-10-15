@@ -21,6 +21,9 @@ export interface WatchlistRequest {
   alertType?: "ABOVE" | "BELOW" | "BOTH";
 }
 
+/**
+ * 내 관심종목 목록 조회
+ */
 export async function getMyWatchlist(): Promise<WatchlistItem[]> {
   try {
     const response = await api.get("/watchlist");
@@ -34,6 +37,9 @@ export async function getMyWatchlist(): Promise<WatchlistItem[]> {
   }
 }
 
+/**
+ * 관심종목 추가
+ */
 export async function addToWatchlist(
   request: WatchlistRequest
 ): Promise<WatchlistItem | null> {
@@ -49,6 +55,9 @@ export async function addToWatchlist(
   }
 }
 
+/**
+ * 관심종목 제거
+ */
 export async function removeFromWatchlist(
   stockSymbol: string
 ): Promise<boolean> {
@@ -61,6 +70,9 @@ export async function removeFromWatchlist(
   }
 }
 
+/**
+ * 특정 종목의 관심종목 여부 확인
+ */
 export async function checkIsInWatchlist(
   stockSymbol: string
 ): Promise<boolean> {
@@ -76,6 +88,9 @@ export async function checkIsInWatchlist(
   }
 }
 
+/**
+ * 관심종목 알림 설정 업데이트
+ */
 export async function updateWatchlistAlert(
   stockSymbol: string,
   request: WatchlistRequest

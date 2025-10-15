@@ -15,6 +15,9 @@ export interface ApiResponse<T> {
   message: string;
 }
 
+/**
+ * 사용자 설정 조회
+ */
 export const getUserSettings = async (): Promise<UserSettings> => {
   try {
     console.log('🔍 사용자 설정 조회 요청');
@@ -32,6 +35,9 @@ export const getUserSettings = async (): Promise<UserSettings> => {
   }
 };
 
+/**
+ * 사용자 설정 업데이트
+ */
 export const updateUserSettings = async (updates: UpdateUserSettingsRequest): Promise<UserSettings> => {
   try {
     console.log('🔄 사용자 설정 업데이트 요청:', updates);
@@ -49,6 +55,9 @@ export const updateUserSettings = async (updates: UpdateUserSettingsRequest): Pr
   }
 };
 
+/**
+ * 테마 설정 업데이트
+ */
 export const updateTheme = async (theme: 'LIGHT' | 'DARK' | 'SYSTEM'): Promise<UserSettings> => {
   try {
     console.log('🎨 테마 설정 업데이트 요청:', theme);
@@ -68,6 +77,9 @@ export const updateTheme = async (theme: 'LIGHT' | 'DARK' | 'SYSTEM'): Promise<U
   }
 };
 
+/**
+ * 커스텀 커서 설정 업데이트
+ */
 export const updateCustomCursor = async (enabled: boolean): Promise<UserSettings> => {
   try {
     console.log('🖱️ 커스텀 커서 설정 업데이트 요청:', enabled);
@@ -87,6 +99,9 @@ export const updateCustomCursor = async (enabled: boolean): Promise<UserSettings
   }
 };
 
+/**
+ * 이모지 애니메이션 설정 업데이트
+ */
 export const updateEmojiAnimation = async (enabled: boolean): Promise<UserSettings> => {
   try {
     console.log('✨ 이모지 애니메이션 설정 업데이트 요청:', enabled);
@@ -106,6 +121,9 @@ export const updateEmojiAnimation = async (enabled: boolean): Promise<UserSettin
   }
 };
 
+/**
+ * 사용자 설정 동기화 (로그인 시 사용)
+ */
 export const syncUserSettings = async (): Promise<UserSettings> => {
   try {
     console.log('🔄 사용자 설정 동기화 시작');
@@ -114,7 +132,7 @@ export const syncUserSettings = async (): Promise<UserSettings> => {
     return settings;
   } catch (error: any) {
     console.error('❌ 사용자 설정 동기화 실패:', error);
-
+    // 동기화 실패 시 기본 설정 사용
     console.log('ℹ️ 기본 설정으로 폴백');
     throw error;
   }

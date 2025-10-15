@@ -45,7 +45,42 @@ export function StockHeaderCard({
         <Card className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
+              {/* 종목 정보 */}
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
+                  {stock.logoUrl && (
+                    <img 
+                      src={stock.logoUrl} 
+                      alt={stock.name}
+                      className="w-12 h-12 rounded-lg object-cover shadow-md"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/placeholder-logo.svg";
+                      }}
+                    />
+                  )}
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                      {stock.name}
+                    </h1>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {stock.symbol}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 주가 정보 */}
               <div className="flex items-center space-x-8">
+                {/* 현재가 */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">현재가</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {currentPrice.toLocaleString()}원
+                  </p>
+                </div>
+
+                {/* 변동률 */}
                 <div className="text-center">
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">변동률</p>
                   <div className="flex items-center space-x-1">
@@ -71,6 +106,15 @@ export function StockHeaderCard({
                   </p>
                 </div>
 
+                {/* 거래량 */}
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">거래량</p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {volume.toLocaleString()}
+                  </p>
+                </div>
+
+                {/* 실시간 상태 */}
                 <div className="flex items-center space-x-2">
                   <div className={`w-2 h-2 rounded-full ${
                     isRealtime ? "bg-green-500 animate-pulse" : "bg-gray-400"

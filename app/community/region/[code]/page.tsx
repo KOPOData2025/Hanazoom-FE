@@ -48,9 +48,9 @@ export default function RegionDiscussionPage() {
           return;
         }
 
-
+        // 사용자의 지역 정보 가져오기
         const response = await fetch(
-          "http:
+          "http://localhost:8080/api/v1/chat/region-info",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -65,9 +65,9 @@ export default function RegionDiscussionPage() {
         const chatData = await response.json();
         const regionId = chatData.data.regionId;
 
-
+        // 지역 통계 정보 가져오기
         const statsResponse = await fetch(
-          `http:
+          `http://localhost:8080/api/v1/regions/${regionId}/stats`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -83,7 +83,7 @@ export default function RegionDiscussionPage() {
         setRegionInfo(statsData.data);
       } catch (error) {
         console.error("Failed to fetch region info:", error);
-
+        // 에러 시 임시 데이터 사용
         setRegionInfo({
           regionId: parseInt(code as string) || 880,
           name: "신대방2동",
@@ -155,6 +155,22 @@ export default function RegionDiscussionPage() {
       <NavBar />
 
       <main className="container mx-auto px-4 pt-20 pb-8">
+        {/* 지역 정보 헤더 */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-8 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-green-900 dark:text-green-100">
+                {regionInfo?.name} 투자 커뮤니티
+              </h1>
+              <p className="text-green-700 dark:text-green-300 mt-2">
+                지역 주민들과 실시간으로 투자 정보를 공유해보세요
+              </p>
+            </div>
+            <MapPin className="w-12 h-12 text-green-600 dark:text-green-400" />
+          </div>
+        </div>
+
+        {/* 탭 선택 */}
         <div className="mb-6">
           <Tabs
             value={activeTab}
@@ -180,6 +196,28 @@ export default function RegionDiscussionPage() {
           </Tabs>
         </div>
 
+        {/* 채팅 탭 */}
+        {activeTab === "chat" && regionInfo && (
+          <div className="space-y-6">
+            <RegionChat
+              regionId={regionInfo.regionId}
+              regionName={regionInfo.name}
+            />
+
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="font-semibold mb-2">채팅 안내</h3>
+                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                  <li>• 같은 지역 주민들과 실시간으로 소통할 수 있습니다</li>
+                  <li>• 투자 정보와 지역 소식을 공유해보세요</li>
+                  <li>• 건전한 대화 문화를 만들어가요</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* 투자 정보 탭 */}
         {activeTab === "info" && (
           <div className="space-y-6">
             <Card>

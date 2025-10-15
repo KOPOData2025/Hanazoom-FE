@@ -46,7 +46,7 @@ export function useChartData(stockSymbol: string): UseChartDataReturn {
             data = await getDailyChartData(stockSymbol, 30);
         }
 
-
+        // 날짜 순으로 정렬
         data.sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
@@ -70,12 +70,12 @@ export function useChartData(stockSymbol: string): UseChartDataReturn {
     loadChartData(selectedPeriod);
   }, [loadChartData, selectedPeriod]);
 
-
+  // 기간 변경 시 데이터 재로딩
   useEffect(() => {
     loadChartData(selectedPeriod);
   }, [selectedPeriod, loadChartData]);
 
-
+  // 종목 변경 시 데이터 재로딩
   useEffect(() => {
     if (stockSymbol) {
       loadChartData(selectedPeriod);

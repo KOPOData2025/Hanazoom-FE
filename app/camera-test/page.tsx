@@ -11,7 +11,7 @@ export default function CameraTestPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-
+  // 사용 가능한 미디어 장치 목록 가져오기
   const getDevices = async () => {
     try {
       const deviceList = await navigator.mediaDevices.enumerateDevices();
@@ -22,7 +22,7 @@ export default function CameraTestPage() {
     }
   };
 
-
+  // 카메라 스트림 시작
   const startCamera = async () => {
     try {
       setError(null);
@@ -34,7 +34,7 @@ export default function CameraTestPage() {
           height: { ideal: 720 },
           frameRate: { ideal: 30 }
         },
-        audio: false 
+        audio: false // 오디오는 제외하고 비디오만
       });
       
       console.log('✅ 카메라 스트림 성공:', stream);
@@ -63,7 +63,7 @@ export default function CameraTestPage() {
     }
   };
 
-
+  // 카메라 스트림 중지
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
@@ -78,7 +78,7 @@ export default function CameraTestPage() {
     console.log('🛑 카메라 스트림 중지');
   };
 
-
+  // 컴포넌트 마운트 시 장치 목록 가져오기
   useEffect(() => {
     getDevices();
   }, []);
@@ -97,6 +97,27 @@ export default function CameraTestPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             
+            {/* 카메라 영역 */}
+            <div className="relative">
+              <div className="bg-gray-900 rounded-lg overflow-hidden aspect-video">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
+                {!isStreaming && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                    <div className="text-center text-white">
+                      <div className="text-6xl mb-4">📹</div>
+                      <p className="text-lg">카메라가 시작되지 않았습니다</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* 상태 표시 */}
               <div className="absolute top-4 left-4">
                 <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                   isStreaming 
@@ -108,6 +129,35 @@ export default function CameraTestPage() {
               </div>
             </div>
 
+            {/* 컨트롤 버튼 */}
+            <div className="flex gap-4 justify-center">
+              {!isStreaming ? (
+                <Button
+                  onClick={startCamera}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
+                >
+                  📹 카메라 시작
+                </Button>
+              ) : (
+                <Button
+                  onClick={stopCamera}
+                  variant="destructive"
+                  className="px-8 py-3 text-lg"
+                >
+                  🛑 카메라 중지
+                </Button>
+              )}
+              
+              <Button
+                onClick={getDevices}
+                variant="outline"
+                className="px-6 py-3"
+              >
+                🔄 장치 목록 새로고침
+              </Button>
+            </div>
+
+            {/* 오류 메시지 */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -127,6 +177,39 @@ export default function CameraTestPage() {
               </div>
             )}
 
+            {/* 장치 목록 */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="font-semibold mb-3 text-gray-900">사용 가능한 미디어 장치</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {devices.map((device, index) => (
+                  <div key={device.deviceId} className="bg-white p-3 rounded border">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">
+                        {device.kind === 'videoinput' ? '📹' : 
+                         device.kind === 'audioinput' ? '🎤' : '🔊'}
+                      </span>
+                      <span className="font-medium text-sm">
+                        {device.kind === 'videoinput' ? '카메라' : 
+                         device.kind === 'audioinput' ? '마이크' : '스피커'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 truncate">
+                      {device.label || `장치 ${index + 1}`}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      ID: {device.deviceId.substring(0, 20)}...
+                    </p>
+                  </div>
+                ))}
+              </div>
+              {devices.length === 0 && (
+                <p className="text-gray-500 text-center py-4">
+                  장치 목록을 불러오는 중...
+                </p>
+              )}
+            </div>
+
+            {/* 사용법 안내 */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="font-semibold mb-2 text-blue-900">사용법</h3>
               <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">

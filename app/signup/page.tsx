@@ -45,11 +45,11 @@ export default function SignupPage() {
     password: "",
     confirmPassword: "",
     marketing: false,
-    address: "", 
-    zonecode: "", 
-    detailAddress: "", 
-    latitude: null as number | null, 
-    longitude: null as number | null, 
+    address: "", // 전체 주소
+    zonecode: "", // 우편번호
+    detailAddress: "", // 상세주소
+    latitude: null as number | null, // 위도
+    longitude: null as number | null, // 경도
   });
   const [agreements, setAgreements] = useState({
     terms: false,
@@ -58,7 +58,7 @@ export default function SignupPage() {
   });
   const [error, setError] = useState("");
 
-
+  // 이미 로그인된 사용자는 홈페이지로 리다이렉트
   useEffect(() => {
     if (accessToken) {
       router.replace("/");
@@ -67,15 +67,15 @@ export default function SignupPage() {
 
   const handleSocialSignup = (provider: string) => {
     if (provider === "kakao") {
-
+      // 카카오 OAuth 인증 URL로 리다이렉트 (회원가입도 동일한 흐름)
       const kakaoClientId =
         process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID ||
         "f50a1c0f8638ca30ef8c170a6ff8412b";
       const redirectUri = encodeURIComponent(
         process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI ||
-          "http:
+          "http://localhost:3000/auth/kakao/callback"
       );
-      const kakaoAuthUrl = `https:
+      const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${redirectUri}&response_type=code&scope=profile_nickname`;
 
       window.location.href = kakaoAuthUrl;
     } else {
@@ -84,10 +84,10 @@ export default function SignupPage() {
   };
 
   const formatPhoneNumber = (value: string) => {
-
+    // 숫자만 추출
     const numbers = value.replace(/[^\d]/g, "");
 
-
+    // 길이에 따라 하이픈 추가
     if (numbers.length <= 3) {
       return numbers;
     } else if (numbers.length <= 7) {
@@ -120,14 +120,14 @@ export default function SignupPage() {
   const handleAddressSearch = () => {
     new window.daum.Postcode({
       oncomplete: function (data: any) {
-
+        // 주소 정보 설정
         setFormData((prev) => ({
           ...prev,
           address: data.address,
           zonecode: data.zonecode,
         }));
 
-
+        // 주소로부터 좌표 정보 가져오기
         if (data.address) {
           getCoordinatesFromAddress(data.address);
         }
@@ -135,12 +135,12 @@ export default function SignupPage() {
     }).open();
   };
 
-
+  // 주소로부터 좌표 정보를 가져오는 함수
   const getCoordinatesFromAddress = async (address: string) => {
     try {
-
+      // 카카오 주소 검색 API를 사용하여 좌표 정보 가져오기
       const response = await fetch(
-        `https:
+        `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(address)}`,
         {
           headers: {
             Authorization: `KakaoAK ${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY || 'f50a1c0f8638ca30ef8c170a6ff8412b'}`,
@@ -195,27 +195,27 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
-
+    // 주소 검증 추가
     if (!formData.address || !formData.zonecode) {
       showErrorAlert("주소를 입력해주세요.");
       return;
     }
 
-
+    // 전화번호 형식 검사 (하이픈이 포함된 형식)
     const phoneRegex = /^01(?:0|1|[6-9])-(?:\d{3}|\d{4})-\d{4}$/;
     if (!phoneRegex.test(formData.phone)) {
       showErrorAlert("전화번호 형식이 올바르지 않습니다.\n예시: 010-1234-5678");
       return;
     }
 
-
+    // 비밀번호 형식 검사
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     if (!passwordRegex.test(formData.password)) {
       showErrorAlert("비밀번호는 8자 이상의 영문자와 숫자 조합이어야 합니다.");
       return;
     }
 
-
+    // 비밀번호 확인
     if (formData.password !== formData.confirmPassword) {
       showErrorAlert("비밀번호가 일치하지 않습니다.");
       return;
@@ -247,7 +247,7 @@ export default function SignupPage() {
     setAgreements((prev) => ({ ...prev, [field]: checked }));
   };
 
-
+  // 이미 로그인된 사용자는 로딩 화면 표시
   if (accessToken) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950 flex items-center justify-center">
@@ -271,6 +271,26 @@ export default function SignupPage() {
       </div>
 
       <div className="flex items-center justify-center p-4 relative overflow-hidden min-h-[calc(100vh-4rem)] pt-28">
+        {/* 배경 장식 요소들 */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="floating-symbol absolute top-20 left-10 text-green-500 dark:text-green-400 text-2xl animate-bounce">
+            🚀
+          </div>
+          <div className="floating-symbol absolute top-40 right-20 text-emerald-600 dark:text-emerald-400 text-xl animate-pulse">
+            💎
+          </div>
+          <div className="floating-symbol absolute bottom-40 right-10 text-emerald-500 dark:text-emerald-400 text-2xl animate-pulse delay-500">
+            📊
+          </div>
+          <div className="floating-symbol absolute bottom-60 left-20 text-green-600 dark:text-green-400 text-xl animate-bounce delay-700">
+            💰
+          </div>
+          <div className="floating-symbol absolute top-60 left-1/4 text-green-400 dark:text-green-300 text-lg animate-bounce delay-300">
+            📈
+          </div>
+        </div>
+
+        {/* 회원가입 카드 */}
         <Card className="w-full max-w-md bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-700 shadow-2xl">
           <CardHeader className="space-y-1">
             <div className="text-center">
@@ -287,6 +307,29 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
+              {/* 이름 입력 필드 */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="name"
+                  className="text-green-800 dark:text-green-200"
+                >
+                  이름
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-5 w-5 text-green-500" />
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="이름을 입력하세요"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="pl-10 border-green-200 dark:border-green-700 focus:border-green-500 dark:focus:border-green-400"
+                  />
+                </div>
+              </div>
+
+              {/* 이메일 입력 필드 */}
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
@@ -308,6 +351,29 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {/* 전화번호 입력 필드 */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="phone"
+                  className="text-green-800 dark:text-green-200"
+                >
+                  휴대폰 번호
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 h-5 w-5 text-green-500" />
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="010-0000-0000"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="pl-10 border-green-200 dark:border-green-700 focus:border-green-500 dark:focus:border-green-400"
+                  />
+                </div>
+              </div>
+
+              {/* 주소 입력 필드 */}
               <div className="space-y-2">
                 <Label
                   htmlFor="address"
@@ -358,6 +424,40 @@ export default function SignupPage() {
                 </div>
               </div>
 
+              {/* 비밀번호 입력 필드 */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="password"
+                  className="text-green-800 dark:text-green-200"
+                >
+                  비밀번호
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-5 w-5 text-green-500" />
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="비밀번호를 입력하세요"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="pl-10 border-green-200 dark:border-green-700 focus:border-green-500 dark:focus:border-green-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-green-500 hover:text-green-600 dark:hover:text-green-400 cursor-pointer"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* 비밀번호 확인 필드 */}
               <div className="space-y-2">
                 <Label
                   htmlFor="confirmPassword"
@@ -450,7 +550,7 @@ export default function SignupPage() {
           </CardContent>
         </Card>
       </div>
-      <Script src="
+      <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" />
     </div>
   );
 }

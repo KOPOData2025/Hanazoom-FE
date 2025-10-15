@@ -90,14 +90,14 @@ export default function WebRTCTestPage() {
       });
       pcRef.current = pc;
 
-
+      // 로컬 트랙 추가
       localStreamRef.current.getTracks().forEach((track) => pc.addTrack(track, localStreamRef.current!));
 
       pc.ontrack = (e) => {
         if (remoteVideoRef.current) remoteVideoRef.current.srcObject = e.streams[0];
       };
 
-
+      // 루프백을 위해 동일 객체에 시그널링
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
@@ -141,7 +141,7 @@ export default function WebRTCTestPage() {
     setStatus("루프백 중지");
   };
 
-
+  // 출력 장치 변경 (지원 브라우저 한정)
   useEffect(() => {
     (async () => {
       if (audioOutputId && localVideoRef.current && "setSinkId" in (localVideoRef.current as any)) {
@@ -162,6 +162,19 @@ export default function WebRTCTestPage() {
             <CardTitle className="text-2xl">WebRTC 테스트 (장치/미리보기/루프백)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* 상태 */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm px-3 py-1 rounded-full bg-gray-100 border">
+                상태: {status}
+              </span>
+              {error && (
+                <span className="text-sm px-3 py-1 rounded bg-red-100 border border-red-300 text-red-700">
+                  오류: {error}
+                </span>
+              )}
+            </div>
+
+            {/* 장치 선택 */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <div className="text-sm mb-1">카메라</div>
@@ -204,6 +217,38 @@ export default function WebRTCTestPage() {
               </div>
             </div>
 
+            {/* 미리보기 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="text-sm mb-2">로컬 미리보기</div>
+                <div className="bg-black rounded overflow-hidden aspect-video">
+                  <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                </div>
+                <div className="flex gap-2 mt-3">
+                  {!isStreaming ? (
+                    <Button onClick={startPreview} className="bg-green-600 hover:bg-green-700">카메라 시작</Button>
+                  ) : (
+                    <Button variant="destructive" onClick={stopPreview}>카메라 중지</Button>
+                  )}
+                  <Button variant="outline" onClick={loadDevices}>장치 새로고침</Button>
+                </div>
+              </div>
+              <div>
+                <div className="text-sm mb-2">루프백 원격 영상</div>
+                <div className="bg-black rounded overflow-hidden aspect-video">
+                  <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                </div>
+                <div className="flex gap-2 mt-3">
+                  {!isLoopback ? (
+                    <Button onClick={startLoopback} className="bg-blue-600 hover:bg-blue-700">루프백 시작</Button>
+                  ) : (
+                    <Button variant="destructive" onClick={stopLoopback}>루프백 중지</Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 장치 목록 */}
             <div>
               <div className="text-sm font-semibold mb-2">감지된 장치</div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

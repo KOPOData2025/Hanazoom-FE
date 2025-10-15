@@ -36,7 +36,7 @@ export default function JoinRoomPage() {
 
   const inviteCode = searchParams.get("code");
 
-
+  // WebRTC 훅 사용
   const {
     localVideoRef,
     remoteVideoRef,
@@ -55,7 +55,7 @@ export default function JoinRoomPage() {
       : "client",
   });
 
-
+  // 방 정보 조회
   useEffect(() => {
     const fetchRoomInfo = async () => {
       if (!inviteCode) {
@@ -91,7 +91,7 @@ export default function JoinRoomPage() {
     fetchRoomInfo();
   }, [inviteCode]);
 
-
+  // 방 참여
   const handleJoinRoom = async () => {
     console.log("🚀 handleJoinRoom 호출됨", {
       roomInfo: !!roomInfo,
@@ -108,7 +108,7 @@ export default function JoinRoomPage() {
 
     setJoining(true);
     try {
-
+      // 로그인 상태 확인 (로그인 필수)
       const token = accessToken;
       console.log("🔍 토큰 확인:", {
         hasToken: !!token,
@@ -117,7 +117,7 @@ export default function JoinRoomPage() {
         source: "zustand",
       });
 
-
+      // 로그인하지 않은 경우 에러
       if (!token) {
         setError("로그인이 필요합니다. 먼저 로그인해주세요.");
         return;
@@ -148,12 +148,12 @@ export default function JoinRoomPage() {
       });
 
       if (response.ok && data.success) {
-
+        // PB 페이지로 이동 (권한에 따라 다른 컴포넌트 표시)
         const roomId = data.data.roomId;
         const inviteCode = data.data.inviteCode;
         const isLoggedIn = !!token;
 
-
+        // 일반 사용자용 clientId 생성
         const clientId = `guest-${roomId.substring(0, 8)}`;
 
         console.log("✅ 방 참여 성공 - PB 페이지로 이동:", {
@@ -163,7 +163,7 @@ export default function JoinRoomPage() {
           isLoggedIn,
         });
 
-
+        // PB 페이지로 이동 (일반 사용자 권한으로)
         const pbPageUrl = `/pb/room/${roomId}?type=pb-room&pbName=상담사&inviteCode=${inviteCode}&clientId=${clientId}&userType=guest`;
         console.log("🔗 PB 페이지로 이동:", pbPageUrl);
         router.push(pbPageUrl);
@@ -178,13 +178,13 @@ export default function JoinRoomPage() {
     }
   };
 
-
+  // 화상상담 종료
   const handleEndCall = () => {
     endConnection();
     router.push("/");
   };
 
-
+  // 로그인 상태 확인
   const isLoggedIn = !!accessToken;
 
   if (loading) {
@@ -200,7 +200,7 @@ export default function JoinRoomPage() {
     );
   }
 
-
+  // 로그인하지 않은 경우 안내 메시지
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-100 flex items-center justify-center">
@@ -354,13 +354,44 @@ export default function JoinRoomPage() {
     );
   }
 
-
+  // 화상상담 화면
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* 헤더 */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-green-900 dark:text-green-100">
+              {roomInfo?.roomName}
+            </h1>
+            <p className="text-green-700 dark:text-green-300">
+              PB와의 1대1 화상상담
+            </p>
+          </div>
+          <Badge
+            className={
+              isConnected
+                ? "bg-green-100 text-green-800 border-green-200"
+                : "bg-red-100 text-red-800 border-red-200"
+            }
+          >
+            {connectionStatus}
+          </Badge>
+        </div>
+
+        {/* 비디오 영역 */}
         <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-green-200 dark:border-green-800">
           <CardContent className="p-4">
             <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
+              {/* 원격 비디오 (PB) */}
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+
+              {/* 로컬 비디오 (작은 화면) */}
               <div className="absolute top-4 right-4 w-32 h-24 bg-gray-800 rounded-lg overflow-hidden">
                 <video
                   ref={localVideoRef}
@@ -371,6 +402,25 @@ export default function JoinRoomPage() {
                 />
               </div>
 
+              {/* 연결 상태 오버레이 */}
+              {!isConnected && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80">
+                  <div className="text-center text-white">
+                    <Video className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <p className="text-lg font-semibold mb-2">
+                      {connectionStatus === "연결 중..."
+                        ? "연결 중..."
+                        : "연결 대기 중"}
+                    </p>
+                    <p className="text-sm text-gray-300">
+                      PB가 화상상담을 시작하면 연결됩니다
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 컨트롤 버튼들 */}
             <div className="flex justify-center gap-4 mt-4">
               <Button
                 onClick={toggleAudio}

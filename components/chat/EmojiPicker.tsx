@@ -14,7 +14,7 @@ interface EmojiPickerProps {
   onEmojiSelect: (emoji: string) => void;
 }
 
-
+// 이모지 카테고리
 const EMOJI_CATEGORIES = [
   {
     name: "표정",
@@ -283,6 +283,26 @@ export default function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
         sideOffset={5}
       >
         <div className="flex flex-col">
+          {/* 카테고리 탭 - 2줄 그리드 */}
+          <div className="border-b bg-muted/30">
+            <div className="grid grid-cols-5 gap-0">
+              {EMOJI_CATEGORIES.map((category, index) => (
+                <button
+                  key={category.name}
+                  onClick={() => setSelectedCategory(index)}
+                  className={`px-3 py-2 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                    selectedCategory === index
+                      ? "bg-background text-foreground border-b-2 border-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 이모지 그리드 */}
           <ScrollArea className="h-64">
             <div className="p-3">
               <div className="grid grid-cols-8 gap-1">

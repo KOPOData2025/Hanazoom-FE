@@ -14,7 +14,7 @@ export function EnhancedHeader({ scrolled }: EnhancedHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-
+  // 컴포넌트가 마운트된 후에만 UI를 표시
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -32,6 +32,23 @@ export function EnhancedHeader({ scrolled }: EnhancedHeaderProps) {
       }`}
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        {/* 로고 */}
+        <Link href="/" className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 dark:from-green-500 dark:to-emerald-400 rounded-lg flex items-center justify-center shadow-lg">
+            <MapPin className="w-5 h-5 text-white" />
+          </div>
+          <span
+            className={`text-xl font-bold transition-colors duration-300 ${
+              scrolled
+                ? "text-green-800 dark:text-green-200"
+                : "text-green-700 dark:text-green-100"
+            }`}
+          >
+            하나줌
+          </span>
+        </Link>
+
+        {/* 데스크톱 메뉴 */}
         <nav className="hidden md:flex items-center space-x-6">
           <Link
             href="/"
@@ -84,6 +101,29 @@ export function EnhancedHeader({ scrolled }: EnhancedHeaderProps) {
           <ThemeToggle />
         </nav>
 
+        {/* 모바일 메뉴 버튼 */}
+        <div className="flex items-center space-x-4 md:hidden">
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`transition-colors duration-300 ${
+              scrolled
+                ? "text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900"
+                : "text-green-800 dark:text-green-200 hover:bg-green-200/50 dark:hover:bg-green-800/50"
+            }`}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* 모바일 메뉴 */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg">
           <nav className="container mx-auto px-4 py-4 flex flex-col space-y-4">

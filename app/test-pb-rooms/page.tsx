@@ -23,7 +23,7 @@ export default function TestPbRoomsPage() {
   const [loading, setLoading] = useState(false);
   const [myRoom, setMyRoom] = useState<any>(null);
 
-
+  // 테스트용 폼 상태
   const [createForm, setCreateForm] = useState({
     roomName: "테스트 PB 상담실",
     roomDescription: "테스트용 상담실입니다",
@@ -36,7 +36,7 @@ export default function TestPbRoomsPage() {
     roomPassword: "",
   });
 
-
+  // 테스트 결과 추가
   const addTestResult = (
     testName: string,
     success: boolean,
@@ -56,7 +56,7 @@ export default function TestPbRoomsPage() {
     ]);
   };
 
-
+  // 1. 방 생성 테스트
   const testCreateRoom = async () => {
     setLoading(true);
     try {
@@ -92,7 +92,7 @@ export default function TestPbRoomsPage() {
     }
   };
 
-
+  // 2. 내 방 조회 테스트
   const testGetMyRoom = async () => {
     setLoading(true);
     try {
@@ -126,7 +126,7 @@ export default function TestPbRoomsPage() {
     }
   };
 
-
+  // 3. 초대 코드 재생성 테스트
   const testRegenerateInviteCode = async () => {
     if (!myRoom) {
       addTestResult("초대 코드 재생성", false, "방이 없습니다");
@@ -169,7 +169,7 @@ export default function TestPbRoomsPage() {
     }
   };
 
-
+  // 4. 방 정보 업데이트 테스트
   const testUpdateRoom = async () => {
     if (!myRoom) {
       addTestResult("방 정보 업데이트", false, "방이 없습니다");
@@ -217,7 +217,7 @@ export default function TestPbRoomsPage() {
     }
   };
 
-
+  // 5. 방 참여 테스트 (시뮬레이션)
   const testJoinRoom = async () => {
     if (!myRoom) {
       addTestResult("방 참여", false, "방이 없습니다");
@@ -260,7 +260,7 @@ export default function TestPbRoomsPage() {
     }
   };
 
-
+  // 6. 활성 방 목록 조회 테스트
   const testGetActiveRooms = async () => {
     setLoading(true);
     try {
@@ -293,7 +293,7 @@ export default function TestPbRoomsPage() {
     }
   };
 
-
+  // 모든 테스트 실행
   const runAllTests = async () => {
     setTestResults([]);
     await testCreateRoom();
@@ -307,7 +307,7 @@ export default function TestPbRoomsPage() {
     await testGetActiveRooms();
   };
 
-
+  // 테스트 결과 초기화
   const clearResults = () => {
     setTestResults([]);
   };
@@ -325,6 +325,73 @@ export default function TestPbRoomsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 테스트 컨트롤 */}
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-green-200 dark:border-green-800">
+            <CardHeader>
+              <CardTitle className="text-green-900 dark:text-green-100">
+                테스트 컨트롤
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  onClick={runAllTests}
+                  disabled={loading}
+                  className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                >
+                  {loading ? "테스트 중..." : "전체 테스트 실행"}
+                </Button>
+                <Button onClick={clearResults} variant="outline">
+                  결과 초기화
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  onClick={testCreateRoom}
+                  disabled={loading}
+                  variant="outline"
+                  className="w-full"
+                >
+                  방 생성 테스트
+                </Button>
+                <Button
+                  onClick={testGetMyRoom}
+                  disabled={loading}
+                  variant="outline"
+                  className="w-full"
+                >
+                  내 방 조회 테스트
+                </Button>
+                <Button
+                  onClick={testRegenerateInviteCode}
+                  disabled={loading || !myRoom}
+                  variant="outline"
+                  className="w-full"
+                >
+                  초대 코드 재생성 테스트
+                </Button>
+                <Button
+                  onClick={testUpdateRoom}
+                  disabled={loading || !myRoom}
+                  variant="outline"
+                  className="w-full"
+                >
+                  방 정보 업데이트 테스트
+                </Button>
+                <Button
+                  onClick={testGetActiveRooms}
+                  disabled={loading}
+                  variant="outline"
+                  className="w-full"
+                >
+                  활성 방 목록 조회 테스트
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 현재 방 정보 */}
           {myRoom && (
             <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-green-200 dark:border-green-800">
               <CardHeader>
@@ -409,4 +476,73 @@ export default function TestPbRoomsPage() {
             </Card>
           )}
         </div>
+
+        {/* 테스트 결과 */}
+        <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-green-200 dark:border-green-800">
+          <CardHeader>
+            <CardTitle className="text-green-900 dark:text-green-100">
+              테스트 결과
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {testResults.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                테스트를 실행해주세요
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {testResults.map((result) => (
+                  <div
+                    key={result.id}
+                    className={`p-4 rounded-lg border ${
+                      result.success
+                        ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
+                        : "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            result.success ? "bg-green-500" : "bg-red-500"
+                          }`}
+                        />
+                        <span className="font-medium">{result.testName}</span>
+                        <span className="text-sm text-gray-500">
+                          ({result.timestamp})
+                        </span>
+                      </div>
+                      <Badge
+                        className={
+                          result.success
+                            ? "bg-green-100 text-green-800 border-green-200"
+                            : "bg-red-100 text-red-800 border-red-200"
+                        }
+                      >
+                        {result.success ? "성공" : "실패"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {result.message}
+                    </p>
+                    {result.data && (
+                      <details className="mt-2">
+                        <summary className="text-sm text-gray-500 cursor-pointer">
+                          상세 데이터 보기
+                        </summary>
+                        <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded mt-1 overflow-auto">
+                          {JSON.stringify(result.data, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
 

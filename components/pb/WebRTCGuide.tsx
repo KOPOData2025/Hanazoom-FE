@@ -26,6 +26,39 @@ export default function WebRTCGuide() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* 기능 소개 */}
+        <Card className="border-green-200 dark:border-green-800">
+          <CardHeader>
+            <CardTitle className="text-lg text-green-900 dark:text-green-100 flex items-center gap-2">
+              <Video className="w-5 h-5" />
+              주요 기능
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-sm">실시간 화상 통화</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-sm">음성/비디오 토글</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-sm">실시간 채팅</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-sm">전체화면 모드</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-sm">연결 상태 표시</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 사용법 */}
         <Card className="border-green-200 dark:border-green-800">
           <CardHeader>
             <CardTitle className="text-lg text-green-900 dark:text-green-100 flex items-center gap-2">
@@ -57,6 +90,43 @@ export default function WebRTCGuide() {
           </CardContent>
         </Card>
 
+        {/* 컨트롤 설명 */}
+        <Card className="border-green-200 dark:border-green-800">
+          <CardHeader>
+            <CardTitle className="text-lg text-green-900 dark:text-green-100 flex items-center gap-2">
+              <Mic className="w-5 h-5" />
+              컨트롤 버튼
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                <Video className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm">비디오 켜기/끄기</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                <Mic className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm">마이크 켜기/끄기</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                <Phone className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm">통화 시작</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                <Phone className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm">상담 종료</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 주의사항 */}
         <Card className="border-yellow-200 dark:border-yellow-800">
           <CardHeader>
             <CardTitle className="text-lg text-yellow-900 dark:text-yellow-100 flex items-center gap-2">
@@ -85,6 +155,36 @@ export default function WebRTCGuide() {
         </Card>
       </div>
 
+      {/* 기술 스택 */}
+      <Card className="border-green-200 dark:border-green-800">
+        <CardHeader>
+          <CardTitle className="text-lg text-green-900 dark:text-green-100">
+            🛠️ 기술 스택
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="font-semibold text-sm text-gray-900 dark:text-gray-100">WebRTC</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">P2P 통신</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="font-semibold text-sm text-gray-900 dark:text-gray-100">WebSocket</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">시그널링</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="font-semibold text-sm text-gray-900 dark:text-gray-100">STOMP</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">메시징 프로토콜</div>
+            </div>
+            <div className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="font-semibold text-sm text-gray-900 dark:text-gray-100">Spring Boot</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">백엔드 서버</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 테스트 방법 */}
       <Card className="border-green-200 dark:border-green-800">
         <CardHeader>
           <CardTitle className="text-lg text-green-900 dark:text-green-100">

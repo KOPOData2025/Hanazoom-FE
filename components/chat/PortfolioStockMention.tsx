@@ -33,7 +33,7 @@ export default function PortfolioStockMention({
         setError(null);
         const portfolioStocks = await getPortfolioStocks();
         
-
+        // 쿼리로 필터링 (종목명 또는 종목코드로 검색)
         const filteredStocks = portfolioStocks.filter(
           (stock) =>
             stock.stockName.toLowerCase().includes(query.toLowerCase()) ||

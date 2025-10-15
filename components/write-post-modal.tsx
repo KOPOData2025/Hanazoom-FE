@@ -61,13 +61,13 @@ export function WritePostModal({
     const file = event.target.files?.[0];
     if (!file) return;
 
-
+    // 파일 타입 검증
     if (!file.type.startsWith('image/')) {
       toast.error('이미지 파일만 업로드할 수 있습니다.');
       return;
     }
 
-
+    // 파일 크기 검증 (500KB 제한)
     if (file.size > 500 * 1024) {
       toast.error('파일 크기는 500KB를 초과할 수 없습니다.');
       return;
@@ -77,7 +77,7 @@ export function WritePostModal({
     setIsUploading(true);
 
     try {
-
+      // 임시로 로컬 스토리지에 저장 (개발용)
       const imageUrl = await uploadImageToLocal(file);
       setImageUrl(imageUrl);
       setImagePreview(imageUrl);
@@ -130,7 +130,7 @@ export function WritePostModal({
         imageUrl: hasImage ? imageUrl : undefined,
       });
 
-
+      // 폼 리셋
       setContent("");
       setSentiment("NEUTRAL");
       setHasVote(false);
@@ -179,7 +179,38 @@ export function WritePostModal({
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden bg-white dark:bg-gray-900">
         <CardContent className="p-0">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              새 글 작성
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+
+          {/* 내용 */}
           <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
+            {/* 기본 내용 */}
+            <div>
+              <Label htmlFor="content" className="text-base font-semibold">
+                내용
+              </Label>
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="무엇을 공유하고 싶으신가요?"
+                className="min-h-[120px] mt-3 text-base"
+              />
+            </div>
+
+            {/* 감정 선택 */}
             <div>
               <Label className="text-base font-semibold">투자 의견</Label>
               <div className="flex space-x-3 mt-3">
@@ -227,6 +258,13 @@ export function WritePostModal({
               </div>
             </div>
 
+            {/* 추가 옵션들 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                추가 옵션
+              </h3>
+
+              {/* 투표 옵션 */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <Checkbox
@@ -304,6 +342,87 @@ export function WritePostModal({
                 )}
               </div>
 
+              {/* 이미지 옵션 */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <Checkbox
+                    id="hasImage"
+                    checked={hasImage}
+                    onCheckedChange={(checked) => {
+                      setHasImage(checked as boolean);
+                      if (!checked) {
+                        handleRemoveImage();
+                      }
+                    }}
+                  />
+                  <Label
+                    htmlFor="hasImage"
+                    className="flex items-center space-x-2 cursor-pointer"
+                  >
+                    <ImageIcon className="w-5 h-5 text-green-600" />
+                    <span className="text-base font-medium">이미지 추가</span>
+                  </Label>
+                </div>
+
+                {hasImage && (
+                  <div className="ml-8 space-y-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        이미지 파일 선택
+                      </Label>
+                      <div className="flex space-x-2 mt-2">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          <FileImage className="w-4 h-4 mr-1" />
+                          {isUploading ? "업로드 중..." : "파일 선택"}
+                        </Button>
+                        {selectedFile && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRemoveImage}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <XIcon className="w-4 h-4 mr-1" />
+                            제거
+                          </Button>
+                        )}
+                      </div>
+                      {selectedFile && (
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          선택된 파일: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)}MB)
+                        </p>
+                      )}
+                    </div>
+
+                    {imagePreview && (
+                      <div className="mt-3">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* URL 입력 옵션 (백업) */}
                     <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-700">
                       <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         또는 이미지 URL 직접 입력
@@ -322,3 +441,29 @@ export function WritePostModal({
             </div>
           </div>
 
+          {/* 하단 버튼 */}
+          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-6"
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!content.trim() || isSubmitting}
+              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-6"
+            >
+              {isSubmitting ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              ) : null}
+              {isSubmitting ? "작성 중..." : "게시하기"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

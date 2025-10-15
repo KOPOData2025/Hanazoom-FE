@@ -9,7 +9,7 @@ interface FloatingEmojiBackgroundProps {
 export function FloatingEmojiBackground({ className = "" }: FloatingEmojiBackgroundProps) {
   const { settings, isInitialized } = useUserSettingsStore();
 
-
+  // 사용자 설정이 로드되지 않았거나 이모지 애니메이션이 비활성화된 경우 렌더링하지 않음
   if (!isInitialized || !settings.emojiAnimationEnabled) {
     return null;
   }

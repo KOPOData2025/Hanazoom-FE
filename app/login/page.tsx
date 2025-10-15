@@ -36,21 +36,21 @@ export default function LoginPage() {
   });
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
 
-
+  // 이미 로그인된 사용자는 홈페이지로 리다이렉트
   useEffect(() => {
     if (accessToken) {
       router.replace("/");
     }
   }, [accessToken, router]);
 
-
+  // 페이지 로드 시 이전에 입력했던 이메일 복원 (로그인 상태 유지와 관계없이)
   useEffect(() => {
     const savedEmail = localStorage.getItem("loginEmail");
 
     if (savedEmail) {
       setFormData((prev) => ({ ...prev, email: savedEmail }));
 
-
+      // 로그인 상태 유지 설정도 복원
       const savedKeepLoggedIn = localStorage.getItem("keepLoggedIn");
       if (savedKeepLoggedIn === "true") {
         setKeepLoggedIn(true);
@@ -91,20 +91,20 @@ export default function LoginPage() {
 
   const handleSocialLogin = (provider: string) => {
     if (provider === "kakao") {
-
+      // 카카오 OAuth 인증 URL로 리다이렉트
       const kakaoClientId =
         process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID ||
         "f50a1c0f8638ca30ef8c170a6ff8412b";
       const redirectUri = encodeURIComponent(
         process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI ||
-          "http:
+          "http://localhost:3000/auth/kakao/callback"
       );
-      const kakaoAuthUrl = `https:
+      const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}&redirect_uri=${redirectUri}&response_type=code&scope=profile_nickname`;
 
-
+      // 디버깅을 위한 로그
       console.log("카카오 OAuth URL:", kakaoAuthUrl);
       console.log("Client ID:", kakaoClientId);
-      console.log("Redirect URI:", "http:
+      console.log("Redirect URI:", "http://localhost:3000/auth/kakao/callback");
 
       window.location.href = kakaoAuthUrl;
     } else {
@@ -115,13 +115,13 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-
+    // 이메일 유효성 검사
     if (!validateEmail(formData.email)) {
       showErrorAlert("올바른 이메일 형식이 아닙니다.");
       return;
     }
 
-
+    // 비밀번호 유효성 검사
     if (!formData.password.trim()) {
       showErrorAlert("비밀번호를 입력해주세요.");
       return;
@@ -156,17 +156,17 @@ export default function LoginPage() {
         longitude: data.longitude,
       });
 
-      
+      // 🎯 이메일은 항상 저장 (사용자 편의를 위해)
       localStorage.setItem("loginEmail", formData.email);
 
-
+      // 로그인 상태 유지 설정만 체크박스 상태에 따라 저장
       if (keepLoggedIn) {
         localStorage.setItem("keepLoggedIn", "true");
       } else {
         localStorage.removeItem("keepLoggedIn");
       }
 
-
+      // 로그인 성공 후 redirect 파라미터가 있으면 해당 페이지로, 없으면 메인화면으로 이동
       const searchParams = new URLSearchParams(window.location.search);
       const redirect = searchParams.get("redirect");
 
@@ -194,6 +194,26 @@ export default function LoginPage() {
       </div>
 
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950 flex items-center justify-center p-4 relative overflow-hidden pt-28">
+        {/* 마우스 따라다니는 아이콘들 */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="floating-symbol absolute top-20 left-10 text-green-500 dark:text-green-400 text-2xl animate-bounce">
+            🚀
+          </div>
+          <div className="floating-symbol absolute top-40 right-20 text-emerald-600 dark:text-emerald-400 text-xl animate-pulse">
+            💎
+          </div>
+          <div className="floating-symbol absolute bottom-40 right-10 text-emerald-500 dark:text-emerald-400 text-2xl animate-pulse delay-500">
+            📊
+          </div>
+          <div className="floating-symbol absolute bottom-60 left-20 text-green-600 dark:text-green-400 text-xl animate-bounce delay-700">
+            💰
+          </div>
+          <div className="floating-symbol absolute top-60 left-1/4 text-green-400 dark:text-green-300 text-lg animate-bounce delay-300">
+            📈
+          </div>
+        </div>
+
+        {/* 로그인 카드 */}
         <Card className="w-full max-w-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-700 shadow-2xl my-8">
           <CardContent className="p-8">
             <div className="text-center mb-8">
@@ -328,7 +348,7 @@ export default function LoginPage() {
                   <svg
                     className="w-5 h-5 mr-2"
                     viewBox="0 0 24 24"
-                    xmlns="http:
+                    xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

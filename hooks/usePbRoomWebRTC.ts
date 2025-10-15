@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Client } from "@stomp/stompjs";
 import { useAuthStore } from "@/app/utils/auth";
 
-
+// RTCPeerConnection 타입 확장
 interface ExtendedRTCPeerConnection extends RTCPeerConnection {
   pendingIceCandidates?: RTCIceCandidateInit[];
 }
@@ -10,7 +10,7 @@ interface ExtendedRTCPeerConnection extends RTCPeerConnection {
 interface UsePbRoomWebRTCProps {
   roomId: string;
   accessToken: string | null;
-  userType?: string; 
+  userType?: string; // 사용자 타입 추가
   onError?: (error: Error) => void;
   onRemoteStream?: (stream: MediaStream) => void;
   onParticipantJoined?: (participant: {
@@ -25,7 +25,7 @@ interface UsePbRoomWebRTCProps {
 export const usePbRoomWebRTC = ({
   roomId,
   accessToken,
-  userType = "pb", 
+  userType = "pb", // 기본값 설정
   onError,
   onRemoteStream,
   onParticipantJoined,
@@ -46,7 +46,7 @@ export const usePbRoomWebRTC = ({
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
-
+  // WebRTC 설정
   const rtcConfig: RTCConfiguration = {
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" },
@@ -54,21 +54,21 @@ export const usePbRoomWebRTC = ({
     ],
   };
 
-
+  // WebSocket 연결
   const connectWebSocket = useCallback(async () => {
-
+    // 이미 연결된 경우 중복 연결 방지
     if (stompClientRef.current?.connected) {
       console.log("⚠️ 이미 WebSocket에 연결되어 있습니다.");
       return;
     }
 
-
+    // 연결 중인 경우 중복 연결 방지
     if (connectionState === "connecting") {
       console.log("⚠️ 이미 WebSocket 연결 중입니다.");
       return;
     }
 
-
+    // 토큰이 없으면 연결하지 않음
     if (!accessToken) {
       console.warn("⚠️ 토큰이 없어서 WebSocket 연결을 건너뜁니다.");
       setConnectionState("offline");
@@ -85,9 +85,9 @@ export const usePbRoomWebRTC = ({
     try {
       console.log("🔌 WebSocket 연결 시도...");
 
-
+      // 백엔드 서버 상태 확인
       try {
-        const healthCheck = await fetch("http:
+        const healthCheck = await fetch("http://localhost:8080/api/health");
         if (healthCheck.ok) {
           console.log("✅ 백엔드 서버 연결 성공:", healthCheck.status);
         } else {
@@ -101,20 +101,20 @@ export const usePbRoomWebRTC = ({
         return;
       }
 
-      console.log("🔗 WebSocket URL:", "ws:
+      console.log("🔗 WebSocket URL:", "ws://localhost:8080/ws/pb-room");
       console.log("🔑 토큰 상태:", accessToken ? "있음" : "없음");
       console.log("🔍 토큰 값:", accessToken);
       console.log("🔍 토큰 타입:", typeof accessToken);
 
       const client = new Client({
-        brokerURL: "ws:
+        brokerURL: "ws://localhost:8080/ws/pb-room",
         connectHeaders: {
           Authorization: `Bearer ${accessToken}`,
         },
         debug: (str) => {
           console.log("STOMP Debug:", str);
         },
-        reconnectDelay: 0, 
+        reconnectDelay: 0, // 재연결 비활성화
         heartbeatIncoming: 4000,
         heartbeatOutgoing: 4000,
         onConnect: () => {
@@ -122,7 +122,7 @@ export const usePbRoomWebRTC = ({
           setIsConnected(true);
           setConnectionState("connected");
 
-
+          // WebRTC 시그널링 구독
           client.subscribe(`/topic/pb-room/${roomId}/webrtc`, (message) => {
             const data = JSON.parse(message.body);
             console.log("📥 WebRTC 메시지 수신:", data);
@@ -146,7 +146,7 @@ export const usePbRoomWebRTC = ({
             }
           });
 
-
+          // WebRTC 연결 자동 시작 (한 번만)
           if (!peerConnectionRef.current) {
             setTimeout(() => {
               console.log("🔄 WebRTC 연결 자동 시작...");
@@ -159,7 +159,7 @@ export const usePbRoomWebRTC = ({
           console.warn("⚠️ STOMP 연결 실패, 오프라인 모드로 전환");
           setConnectionState("offline");
           setIsConnected(false);
-
+          // 오프라인 모드에서도 로컬 비디오 시작
           initiateCall();
         },
         onWebSocketError: (error) => {
@@ -167,25 +167,25 @@ export const usePbRoomWebRTC = ({
           console.warn("⚠️ WebSocket 연결 실패, 오프라인 모드로 전환");
           setConnectionState("offline");
           setIsConnected(false);
-
+          // 오프라인 모드에서도 로컬 비디오 시작
           initiateCall();
         },
         onDisconnect: () => {
           console.warn("⚠️ WebSocket 연결 끊김, 오프라인 모드로 전환");
           setConnectionState("offline");
           setIsConnected(false);
-
+          // 오프라인 모드에서도 로컬 비디오 시작
           setTimeout(() => {
             initiateCall();
           }, 1000);
         },
       });
 
+      // WebRTC 시그널링 구독은 onConnect 콜백에서 처리
 
+      // onDisconnect는 Client 생성자에서 처리
 
-
-
-
+      // 기존 연결이 있으면 먼저 해제
       if (stompClientRef.current?.connected) {
         stompClientRef.current.deactivate();
       }
@@ -196,16 +196,16 @@ export const usePbRoomWebRTC = ({
       console.warn("⚠️ WebSocket 연결 실패, 오프라인 모드로 전환");
       setConnectionState("offline");
       setIsConnected(false);
-
+      // 오프라인 모드에서도 로컬 비디오 시작
       setTimeout(() => {
         initiateCall();
       }, 1000);
     }
-  }, [roomId, onError]); 
+  }, [roomId, onError]); // accessToken 제거 - 함수 내부에서 직접 사용
 
-
+  // WebRTC 연결 시작
   const initiateCall = useCallback(async () => {
-
+    // 이미 PeerConnection이 있는 경우 중복 생성 방지
     if (peerConnectionRef.current) {
       console.log("⚠️ 이미 WebRTC 연결이 있습니다.");
       return;
@@ -214,7 +214,7 @@ export const usePbRoomWebRTC = ({
     try {
       console.log("🔄 WebRTC 연결 시작...");
 
-
+      // 먼저 사용 가능한 미디어 장치 확인
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter((device) => device.kind === "videoinput");
       const audioDevices = devices.filter((device) => device.kind === "audioinput");
@@ -222,18 +222,18 @@ export const usePbRoomWebRTC = ({
       console.log("사용 가능한 비디오 장치:", videoDevices.length);
       console.log("사용 가능한 오디오 장치:", audioDevices.length);
 
-
+      // 장치가 없는 경우 텍스트 모드로 진행
       if (videoDevices.length === 0 && audioDevices.length === 0) {
         console.warn("⚠️ 미디어 장치를 찾을 수 없습니다. 텍스트 채팅 모드로 진행합니다.");
         setMediaMode("text");
         return;
       }
 
-
+      // 미디어 스트림 요청 (단계별 시도)
       let stream: MediaStream | null = null;
 
       try {
-
+        // 1. 비디오 + 오디오 모두 요청
         stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 1280, height: 720 },
           audio: true,
@@ -243,7 +243,7 @@ export const usePbRoomWebRTC = ({
       } catch (err) {
         console.log("비디오 + 오디오 실패, 오디오만 시도...");
         try {
-
+          // 2. 오디오만 요청
           stream = await navigator.mediaDevices.getUserMedia({
             video: false,
             audio: true,
@@ -253,7 +253,7 @@ export const usePbRoomWebRTC = ({
         } catch (audioErr) {
           console.log("오디오도 실패, 비디오만 시도...");
           try {
-
+            // 3. 비디오만 요청
             stream = await navigator.mediaDevices.getUserMedia({
               video: { width: 1280, height: 720 },
               audio: false,
@@ -279,23 +279,23 @@ export const usePbRoomWebRTC = ({
         return;
       }
 
-
+      // 오프라인 모드에서는 로컬 비디오만 표시
       if (connectionState === "offline") {
         console.log("📹 오프라인 모드 - 로컬 비디오만 표시");
         return;
       }
 
-
+      // PeerConnection 생성
       peerConnectionRef.current = new RTCPeerConnection(
         rtcConfig
       ) as ExtendedRTCPeerConnection;
 
-
+      // 미디어 스트림 추가
       stream.getTracks().forEach((track) => {
         peerConnectionRef.current?.addTrack(track, stream);
       });
 
-
+      // 원격 스트림 처리
       peerConnectionRef.current.ontrack = (event) => {
         console.log("📹 원격 스트림 수신:", event.streams[0]);
         if (remoteVideoRef.current) {
@@ -304,14 +304,14 @@ export const usePbRoomWebRTC = ({
         }
       };
 
-
+      // ICE Candidate 처리
       peerConnectionRef.current.onicecandidate = (event) => {
         if (event.candidate && stompClientRef.current?.connected) {
           sendIceCandidate(event.candidate);
         }
       };
 
-
+      // 연결 상태 변경
       peerConnectionRef.current.onconnectionstatechange = () => {
         const state =
           peerConnectionRef.current?.connectionState || "disconnected";
@@ -323,7 +323,7 @@ export const usePbRoomWebRTC = ({
         }
       };
 
-
+      // PB만 Offer를 생성하고 전송 (고객은 Answer만 처리)
       if (userType === "pb") {
         console.log("🎯 PB 역할 - Offer 생성 및 전송");
         const offer = await peerConnectionRef.current.createOffer();
@@ -334,7 +334,7 @@ export const usePbRoomWebRTC = ({
       } else {
         console.log("🎯 고객 역할 - Answer 대기 중");
 
-
+        // 고객이 입장했을 때 PB에게 알림 전송
         if (stompClientRef.current?.connected) {
           const currentUserId = getCurrentUserId?.();
           console.log("📤 고객 입장 알림 전송:", {
@@ -354,11 +354,11 @@ export const usePbRoomWebRTC = ({
       console.error("❌ WebRTC 연결 실패:", error);
       console.log("장치가 없거나 권한이 거부되었습니다. 텍스트 채팅으로 상담을 진행할 수 있습니다.");
       setMediaMode("text");
-
+      // 에러를 던지지 않고 텍스트 모드로 진행
     }
-  }, [onError, userType]); 
+  }, [onError, userType]); // userType 추가
 
-
+  // Offer 전송
   const sendOffer = useCallback(
     (offer: RTCSessionDescriptionInit) => {
       if (!stompClientRef.current?.connected) return;
@@ -371,9 +371,9 @@ export const usePbRoomWebRTC = ({
     [roomId]
   );
 
+  // Answer 전송은 handleOffer에서 직접 처리
 
-
-
+  // ICE Candidate 전송
   const sendIceCandidate = useCallback(
     (candidate: RTCIceCandidate) => {
       if (!stompClientRef.current?.connected) return;
@@ -386,7 +386,7 @@ export const usePbRoomWebRTC = ({
     [roomId]
   );
 
-
+  // Offer 처리
   const handleOffer = useCallback(
     async (offer: RTCSessionDescriptionInit) => {
       if (!peerConnectionRef.current) return;
@@ -394,12 +394,12 @@ export const usePbRoomWebRTC = ({
       try {
         console.log("📥 Offer 수신:", offer);
 
-
+        // 고객만 Answer를 생성 (PB는 Offer만 보냄)
         if (userType === "guest") {
           console.log("🎯 고객 역할 - Answer 생성 및 전송");
           await peerConnectionRef.current.setRemoteDescription(offer);
 
-
+          // 큐에 저장된 ICE Candidate들 처리
           if (peerConnectionRef.current.pendingIceCandidates) {
             console.log("📥 큐에 저장된 ICE Candidate들 처리 중...");
             for (const candidate of peerConnectionRef.current
@@ -418,7 +418,7 @@ export const usePbRoomWebRTC = ({
           await peerConnectionRef.current.setLocalDescription(answer);
 
           console.log("📤 Answer 전송:", answer);
-
+          // sendAnswer 직접 호출
           if (stompClientRef.current?.connected) {
             stompClientRef.current.publish({
               destination: `/app/webrtc/webrtc/${roomId}/answer`,
@@ -435,10 +435,10 @@ export const usePbRoomWebRTC = ({
         onError?.(error as Error);
       }
     },
-    [onError, roomId, userType] 
+    [onError, roomId, userType] // userType 추가
   );
 
-
+  // Answer 처리
   const handleAnswer = useCallback(
     async (answer: RTCSessionDescriptionInit) => {
       if (!peerConnectionRef.current) return;
@@ -446,12 +446,12 @@ export const usePbRoomWebRTC = ({
       try {
         console.log("📥 Answer 수신:", answer);
 
-
+        // PB만 Answer를 처리 (고객은 Answer를 보냄)
         if (userType === "pb") {
           console.log("🎯 PB 역할 - Answer 처리");
           await peerConnectionRef.current.setRemoteDescription(answer);
 
-
+          // 큐에 저장된 ICE Candidate들 처리
           if (peerConnectionRef.current.pendingIceCandidates) {
             console.log("📥 큐에 저장된 ICE Candidate들 처리 중...");
             for (const candidate of peerConnectionRef.current
@@ -475,10 +475,10 @@ export const usePbRoomWebRTC = ({
         onError?.(error as Error);
       }
     },
-    [onError, userType] 
+    [onError, userType] // userType 추가
   );
 
-
+  // ICE Candidate 처리
   const handleIceCandidate = useCallback(
     async (candidate: RTCIceCandidateInit) => {
       if (!peerConnectionRef.current) return;
@@ -486,12 +486,12 @@ export const usePbRoomWebRTC = ({
       try {
         console.log("📥 ICE Candidate 수신:", candidate);
 
-
+        // remoteDescription이 설정되었는지 확인
         if (!peerConnectionRef.current.remoteDescription) {
           console.log(
             "⚠️ remoteDescription이 없어서 ICE Candidate를 큐에 저장"
           );
-
+          // ICE Candidate를 큐에 저장하고 나중에 처리
           if (!peerConnectionRef.current.pendingIceCandidates) {
             peerConnectionRef.current.pendingIceCandidates = [];
           }
@@ -509,12 +509,12 @@ export const usePbRoomWebRTC = ({
     [onError]
   );
 
-
+  // 사용자 입장 처리
   const handleUserJoined = useCallback(
     (data: { userType: string; userId: string }) => {
       console.log("👤 사용자 입장:", data);
 
-
+      // 참여자 입장 이벤트 발생
       onParticipantJoined?.({
         id: data.userId,
         name: data.userType === "guest" ? "고객" : "PB",
@@ -522,17 +522,17 @@ export const usePbRoomWebRTC = ({
         joinedAt: new Date().toLocaleTimeString(),
       });
 
-
+      // PB가 고객 입장을 감지했을 때 재연결 시도
       if (userType === "pb" && data.userType === "guest") {
         console.log("🔄 고객 입장 감지 - WebRTC 재연결 시도");
 
-
+        // 기존 연결이 있다면 정리
         if (peerConnectionRef.current) {
           peerConnectionRef.current.close();
           peerConnectionRef.current = null;
         }
 
-
+        // 1초 후 재연결 시도
         setTimeout(() => {
           initiateCall();
         }, 1000);
@@ -541,30 +541,30 @@ export const usePbRoomWebRTC = ({
     [userType, initiateCall, onParticipantJoined]
   );
 
-
+  // 사용자 강제 퇴장 처리
   const handleUserKicked = useCallback(
     (data: { participantId: string; kickedBy: string }) => {
       console.log("👤 사용자 강제 퇴장:", data);
 
-
+      // 참여자 퇴장 이벤트 발생 (page.tsx에서 처리)
       onParticipantLeft?.(data.participantId);
 
-
+      // 본인이 강제 퇴장당한 경우 연결 종료
       if (data.participantId === getCurrentUserId?.()) {
         console.log("🚫 본인이 강제 퇴장되었습니다. 연결을 종료합니다.");
 
-
+        // WebSocket 연결 종료
         if (stompClientRef.current?.connected) {
           stompClientRef.current.deactivate();
         }
 
-
+        // PeerConnection 종료
         if (peerConnectionRef.current) {
           peerConnectionRef.current.close();
           peerConnectionRef.current = null;
         }
 
-
+        // 상태 초기화
         setIsConnected(false);
         setConnectionState("disconnected");
       }
@@ -572,7 +572,7 @@ export const usePbRoomWebRTC = ({
     [onParticipantLeft, getCurrentUserId]
   );
 
-
+  // 비디오 토글
   const toggleVideo = useCallback(() => {
     if (localStream) {
       const videoTrack = localStream.getVideoTracks()[0];
@@ -583,7 +583,7 @@ export const usePbRoomWebRTC = ({
     }
   }, [localStream]);
 
-
+  // 오디오 토글
   const toggleAudio = useCallback(() => {
     if (localStream) {
       const audioTrack = localStream.getAudioTracks()[0];
@@ -594,7 +594,7 @@ export const usePbRoomWebRTC = ({
     }
   }, [localStream]);
 
-
+  // 연결 종료
   const disconnect = useCallback(() => {
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close();
@@ -604,7 +604,7 @@ export const usePbRoomWebRTC = ({
       stompClientRef.current.deactivate();
       stompClientRef.current = null;
     }
-
+    // localStream은 ref로 관리하거나 별도로 처리
     setLocalStream((prevStream) => {
       if (prevStream) {
         prevStream.getTracks().forEach((track) => track.stop());
@@ -613,14 +613,14 @@ export const usePbRoomWebRTC = ({
     });
     setIsConnected(false);
     setConnectionState("disconnected");
-  }, []); 
+  }, []); // 의존성 제거
 
-
+  // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
       disconnect();
     };
-  }, []); 
+  }, []); // 의존성 제거
 
   return {
     isConnected,

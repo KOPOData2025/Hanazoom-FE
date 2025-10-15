@@ -14,14 +14,14 @@ export interface MapViewport {
 }
 
 export function useMapBounds() {
-
+  // 초기 viewport 설정 (한국 전체 영역)
   const [viewport, setViewport] = useState<MapViewport>({
-    center: { lat: 36.5, lng: 127.5 }, 
+    center: { lat: 36.5, lng: 127.5 }, // 한국 중심
     bounds: {
-      north: 38.6, 
-      south: 33.0, 
-      east: 132.0, 
-      west: 124.0, 
+      north: 38.6, // 북쪽 경계
+      south: 33.0, // 남쪽 경계
+      east: 132.0, // 동쪽 경계
+      west: 124.0, // 서쪽 경계
     },
     zoomLevel: 9,
   });
@@ -45,7 +45,7 @@ export function useMapBounds() {
 
   const isPointInBounds = useCallback(
     (lat: number, lng: number, padding: number = 0.2): boolean => {
-      if (!viewport) return true; 
+      if (!viewport) return true; // fallback
 
       const { bounds } = viewport;
       const latPadding = (bounds.north - bounds.south) * padding;

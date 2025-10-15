@@ -74,6 +74,12 @@ export function TossVote({
   return (
     <Card className="bg-gray-900 border-gray-700 text-white">
       <CardContent className="p-6">
+        {/* 투표 질문 */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-white">{voteQuestion}</h3>
+        </div>
+
+        {/* 투표 옵션 */}
         <div className="space-y-3 mb-6">
           {voteOptions.map((option) => (
             <div key={option.id} className="relative">
@@ -95,7 +101,66 @@ export function TossVote({
                   )}
                 </div>
 
+                {/* 투표 진행률 바 */}
+                {hasVoted && (
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${getPercentage(option)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* 투표 참여자 수 */}
         <div className="text-center mb-6">
           <p className="text-gray-300 text-sm">{totalVotes}명이 참여했어요</p>
         </div>
 
+        {/* 상호작용 버튼들 */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-700">
+          <div className="flex items-center space-x-6">
+            <button
+              onClick={onLike}
+              className={cn(
+                "flex items-center space-x-2 text-gray-400 hover:text-red-400 transition-colors",
+                isLiked && "text-red-400"
+              )}
+              title={isLiked ? "좋아요 취소" : "좋아요"}
+            >
+              <Heart 
+                className={cn("w-5 h-5", isLiked && "fill-current")}
+                style={{
+                  fill: isLiked ? 'currentColor' : 'none',
+                  stroke: 'currentColor',
+                  strokeWidth: isLiked ? 0 : 1.5
+                }}
+              />
+              <span className="text-sm">{likeCount}</span>
+            </button>
+
+            <button
+              onClick={onComment}
+              className="flex items-center space-x-2 text-gray-400 hover:text-blue-400 transition-colors"
+            >
+              <MessageSquare className="w-5 h-5" />
+              <span className="text-sm">{commentCount}</span>
+            </button>
+          </div>
+
+          <button
+            onClick={onShare}
+            className="text-gray-400 hover:text-green-400 transition-colors"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

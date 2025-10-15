@@ -48,7 +48,7 @@ export default function PortfolioDashboard() {
     clearError();
 
     try {
-
+      // 개별적으로 API 호출하여 일부 실패해도 다른 데이터는 표시
       const summary = await getPortfolioSummary();
       if (summary) {
         console.log("🚀 PortfolioSummary API 응답:", summary);
@@ -64,7 +64,7 @@ export default function PortfolioDashboard() {
         setTradeHistory(trades);
       }
 
-
+      // 에러가 발생한 API가 있는지 확인
       const errors: string[] = [];
       if (!summary) errors.push("포트폴리오 요약");
       if (!stocks) errors.push("보유 주식 목록");
@@ -81,7 +81,7 @@ export default function PortfolioDashboard() {
     }
   };
 
-
+  // 초기 로딩 중일 때
   if (isInitialLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -95,7 +95,7 @@ export default function PortfolioDashboard() {
     );
   }
 
-
+  // 에러가 발생했지만 일부 데이터는 있는 경우
   if (
     loadErrors.length > 0 &&
     !portfolioSummary &&
@@ -124,8 +124,62 @@ export default function PortfolioDashboard() {
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
+      {/* 헤더 */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl text-green-900 dark:text-green-100">
+            포트폴리오
+          </h1>
+          <p className="text-green-700 dark:text-green-300 mt-2 text-lg">
+            하나증권 계좌 현황 및 거래 관리
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowConsultationModal(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
+          >
+            <Users className="w-4 h-4" />
+            PB 상담하기
+          </button>
+        </div>
+      </div>
+
+      {/* 포트폴리오 요약 카드 */}
       {portfolioSummary && <PortfolioSummaryCard summary={portfolioSummary} />}
 
+      {/* 메인 콘텐츠 탭 */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            종합현황
+          </TabsTrigger>
+          <TabsTrigger value="stocks" className="flex items-center gap-2">
+            <Wallet className="w-4 h-4" />
+            보유주식
+          </TabsTrigger>
+          <TabsTrigger value="trades" className="flex items-center gap-2">
+            <History className="w-4 h-4" />
+            거래내역
+          </TabsTrigger>
+          <TabsTrigger value="analysis" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            기본 분석
+          </TabsTrigger>
+          <TabsTrigger value="regional" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            지역별 비교
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* 계좌 정보 */}
             <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg text-green-900 dark:text-green-100">
@@ -172,6 +226,45 @@ export default function PortfolioDashboard() {
               </CardContent>
             </Card>
 
+            {/* 현금 현황 */}
+            <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-green-900 dark:text-green-100">
+                  현금 현황
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-green-700 dark:text-green-300">
+                    사용가능
+                  </span>
+                  <span className="font-medium text-green-600 dark:text-green-400">
+                    {portfolioSummary?.availableCash?.toLocaleString() || "0"}원
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-green-700 dark:text-green-300">
+                    정산대기
+                  </span>
+                  <span className="font-medium text-orange-600 dark:text-orange-400">
+                    {portfolioSummary?.settlementCash?.toLocaleString() || "0"}
+                    원
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-green-700 dark:text-green-300">
+                    인출가능
+                  </span>
+                  <span className="font-medium text-blue-600 dark:text-blue-400">
+                    {portfolioSummary?.withdrawableCash?.toLocaleString() ||
+                      "0"}
+                    원
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 주식 현황 */}
             <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg text-green-900 dark:text-green-100">
@@ -243,3 +336,31 @@ export default function PortfolioDashboard() {
         </TabsContent>
       </Tabs>
 
+      {/* 상담 예약 모달 */}
+      {showConsultationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                PB 상담 예약
+              </h2>
+              <button
+                onClick={() => setShowConsultationModal(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <ConsultationBooking
+              pbId="pb-001"
+              onBookingComplete={(booking) => {
+                console.log("예약 완료:", booking);
+                setShowConsultationModal(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,7 +1,10 @@
 import { ChartDataDto, CandleData } from "@/types/chart";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http:
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
+/**
+ * 차트 데이터 조회 (시간봉별)
+ */
 export async function getChartData(
   stockCode: string,
   timeframe: string = "1D",
@@ -24,6 +27,9 @@ export async function getChartData(
   }
 }
 
+/**
+ * 현재 진행 중인 캔들 조회
+ */
 export async function getCurrentCandle(
   stockCode: string,
   timeframe: string = "1D"
@@ -45,6 +51,9 @@ export async function getCurrentCandle(
   }
 }
 
+/**
+ * 캔들 데이터를 차트용으로 포맷팅
+ */
 export function formatCandleForChart(candle: CandleData): any {
   return {
     time: candle.dateTime || new Date(candle.timestamp).toISOString(),
@@ -60,9 +69,12 @@ export function formatCandleForChart(candle: CandleData): any {
   };
 }
 
+/**
+ * 일봉 차트 데이터 조회
+ */
 export async function getDailyChartData(
   stockSymbol: string,
-  days: number = 2500 
+  days: number = 2500 // 약 10년치 (250일 * 10년)
 ): Promise<ChartDataDto[]> {
   try {
     const response = await fetch(
@@ -81,9 +93,12 @@ export async function getDailyChartData(
   }
 }
 
+/**
+ * 주봉 차트 데이터 조회
+ */
 export async function getWeeklyChartData(
   stockSymbol: string,
-  weeks: number = 520 
+  weeks: number = 520 // 약 10년치 (52주 * 10년)
 ): Promise<ChartDataDto[]> {
   try {
     const response = await fetch(
@@ -102,9 +117,12 @@ export async function getWeeklyChartData(
   }
 }
 
+/**
+ * 월봉 차트 데이터 조회
+ */
 export async function getMonthlyChartData(
   stockSymbol: string,
-  months: number = 120 
+  months: number = 120 // 약 10년치 (12개월 * 10년)
 ): Promise<ChartDataDto[]> {
   try {
     const response = await fetch(

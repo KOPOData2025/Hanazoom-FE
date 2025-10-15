@@ -1,4 +1,4 @@
-
+// 주식 종목별 브랜드 색상 매핑 데이터베이스
 export interface StockBrandColor {
   primary: string;
   secondary: string;
@@ -7,7 +7,7 @@ export interface StockBrandColor {
 }
 
 export const stockBrandColors: { [key: string]: StockBrandColor } = {
-
+  // 하나은행 (Hana Bank)
   "086790": {
     primary: "#00B04F",
     secondary: "#009639",
@@ -15,7 +15,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "하나은행",
   },
 
-
+  // 삼성전자
   "005930": {
     primary: "#1428A0",
     secondary: "#1E40AF",
@@ -23,7 +23,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "삼성전자",
   },
 
-
+  // LG에너지솔루션
   "373220": {
     primary: "#A50034",
     secondary: "#DC2626",
@@ -31,7 +31,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "LG에너지솔루션",
   },
 
-
+  // SK하이닉스
   "000660": {
     primary: "#FF6900",
     secondary: "#EA580C",
@@ -39,7 +39,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "SK하이닉스",
   },
 
-
+  // 네이버
   "035420": {
     primary: "#03C75A",
     secondary: "#059669",
@@ -47,7 +47,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "네이버",
   },
 
-
+  // 카카오
   "035720": {
     primary: "#FEE500",
     secondary: "#F59E0B",
@@ -55,7 +55,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "카카오",
   },
 
-
+  // 현대자동차
   "005380": {
     primary: "#002C5F",
     secondary: "#1E40AF",
@@ -63,7 +63,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "현대자동차",
   },
 
-
+  // 기아
   "000270": {
     primary: "#05141F",
     secondary: "#1F2937",
@@ -71,7 +71,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "기아",
   },
 
-
+  // POSCO홀딩스
   "005490": {
     primary: "#DC2626",
     secondary: "#B91C1C",
@@ -79,7 +79,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "POSCO홀딩스",
   },
 
-
+  // LG화학
   "051910": {
     primary: "#7C3AED",
     secondary: "#6D28D9",
@@ -87,7 +87,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "LG화학",
   },
 
-
+  // 셀트리온
   "068270": {
     primary: "#059669",
     secondary: "#047857",
@@ -95,7 +95,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "셀트리온",
   },
 
-
+  // NAVER
   "035420": {
     primary: "#03C75A",
     secondary: "#059669",
@@ -103,7 +103,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "네이버",
   },
 
-
+  // 삼성바이오로직스
   "207940": {
     primary: "#7C3AED",
     secondary: "#6D28D9",
@@ -111,7 +111,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "삼성바이오로직스",
   },
 
-
+  // 기아
   "000270": {
     primary: "#05141F",
     secondary: "#1F2937",
@@ -119,7 +119,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "기아",
   },
 
-
+  // SK텔레콤
   "017670": {
     primary: "#EA580C",
     secondary: "#DC2626",
@@ -127,7 +127,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "SK텔레콤",
   },
 
-
+  // LG전자
   "066570": {
     primary: "#A50034",
     secondary: "#DC2626",
@@ -135,7 +135,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "LG전자",
   },
 
-
+  // 삼성물산
   "028260": {
     primary: "#1428A0",
     secondary: "#1E40AF",
@@ -143,7 +143,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "삼성물산",
   },
 
-
+  // SK이노베이션
   "096770": {
     primary: "#EA580C",
     secondary: "#DC2626",
@@ -151,7 +151,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "SK이노베이션",
   },
 
-
+  // 한미반도체
   "042700": {
     primary: "#7C3AED",
     secondary: "#6D28D9",
@@ -159,7 +159,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "한미반도체",
   },
 
-
+  // CJ ENM
   "035760": {
     primary: "#EC4899",
     secondary: "#DB2777",
@@ -167,7 +167,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "CJ ENM",
   },
 
-
+  // 카카오뱅크
   "323410": {
     primary: "#FEE500",
     secondary: "#F59E0B",
@@ -175,7 +175,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
     name: "카카오뱅크",
   },
 
-
+  // 토스
   "251270": {
     primary: "#8B5CF6",
     secondary: "#7C3AED",
@@ -184,7 +184,7 @@ export const stockBrandColors: { [key: string]: StockBrandColor } = {
   },
 };
 
-
+// 기본 색상 (하나은행 브랜드 색상)
 export const defaultStockColor: StockBrandColor = {
   primary: "#00B04F",
   secondary: "#009639",
@@ -192,12 +192,12 @@ export const defaultStockColor: StockBrandColor = {
   name: "기본",
 };
 
-
+// 주식 코드로 브랜드 색상 가져오기
 export function getStockBrandColor(stockCode: string): StockBrandColor {
   return stockBrandColors[stockCode] || defaultStockColor;
 }
 
-
+// 업종별 기본 색상 매핑
 export const sectorDefaultColors: { [key: string]: StockBrandColor } = {
   "IT/전자": {
     primary: "#1428A0",
@@ -249,7 +249,7 @@ export const sectorDefaultColors: { [key: string]: StockBrandColor } = {
   },
 };
 
-
+// 업종으로 브랜드 색상 가져오기
 export function getSectorBrandColor(sector: string): StockBrandColor {
   return sectorDefaultColors[sector] || defaultStockColor;
 }

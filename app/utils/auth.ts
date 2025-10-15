@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthStore>()(
       updateAccessToken: (accessToken) => set({ accessToken }),
       clearAuth: () => {
         set({ accessToken: null, user: null });
-
+        // 사용자 설정도 초기화
         useUserSettingsStore.getState().resetToDefaults();
         console.log("✅ 인증 정보 및 사용자 설정 초기화 완료");
       },
@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthStore>()(
           return state.user.id;
         }
 
-
+        // JWT 토큰에서 사용자 ID 추출 시도
         if (state.accessToken) {
           try {
             const payload = JSON.parse(atob(state.accessToken.split(".")[1]));
@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         accessToken: state.accessToken,
       }),
-
+      // 하이드레이션 이후 만료 토큰 자동 처리
       onRehydrateStorage: () => (state) => {
         try {
           const token = state?.accessToken;
@@ -84,7 +84,7 @@ export const useAuthStore = create<AuthStore>()(
 
           if (!isExpired) return;
 
-
+          // 만료 시 즉시 갱신 시도, 실패하면 상태 초기화
           fetch("/api/auth/refresh-token", { credentials: "include" })
             .then(async (res) => {
               if (!res.ok) throw new Error("refresh failed");
@@ -95,7 +95,7 @@ export const useAuthStore = create<AuthStore>()(
               useAuthStore.getState().clearAuth();
             });
         } catch {
-
+          // 파싱 실패 등 -> 안전하게 초기화
           useAuthStore.getState().clearAuth();
         }
       },
@@ -116,18 +116,18 @@ export const setLoginData = async (
     refreshToken: refreshToken?.substring(0, 20) + "...",
   });
 
-
+  // 좌표 데이터를 숫자로 변환
   const processedUser: User = {
     ...user,
     latitude: user.latitude ? Number(user.latitude) : null,
     longitude: user.longitude ? Number(user.longitude) : null,
   };
 
-
+  // accessToken과 user 정보를 Zustand store에 저장
   useAuthStore.getState().setAuth({ accessToken, user: processedUser });
   console.log("✅ Zustand store에 인증 정보 저장 완료");
 
-
+  // 사용자 설정 동기화
   try {
     console.log("🔄 사용자 설정 동기화 시작");
     const userSettings = await syncUserSettings();
@@ -135,11 +135,11 @@ export const setLoginData = async (
     console.log("✅ 사용자 설정 동기화 완료:", userSettings);
   } catch (error) {
     console.error("❌ 사용자 설정 동기화 실패:", error);
-
+    // 설정 동기화 실패해도 로그인은 계속 진행
     console.log("ℹ️ 기본 설정으로 계속 진행");
   }
 
-
+  // refreshToken을 httpOnly 쿠키로 저장
   try {
     console.log("🔄 refreshToken 쿠키 저장 시도");
     const response = await fetch("/api/auth/set-refresh-token", {
@@ -148,7 +148,7 @@ export const setLoginData = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ refreshToken }),
-      credentials: "include", 
+      credentials: "include", // 쿠키를 포함하여 요청
     });
 
     if (!response.ok) {
@@ -158,7 +158,7 @@ export const setLoginData = async (
     console.log("✅ refreshToken 쿠키 저장 완료");
   } catch (error) {
     console.error("❌ Failed to set refresh token:", error);
-    throw error; 
+    throw error; // 에러를 상위로 전파하여 적절한 처리 유도
   }
 };
 
@@ -169,7 +169,7 @@ export const getAccessToken = () => {
 export const refreshAccessToken = async () => {
   try {
     const response = await fetch("/api/auth/refresh-token", {
-      credentials: "include", 
+      credentials: "include", // 쿠키를 포함하여 요청
     });
 
     if (!response.ok) {
@@ -190,7 +190,7 @@ export const refreshAccessToken = async () => {
     console.error("Failed to refresh access token:", error);
     useAuthStore.getState().clearAuth();
 
-
+    // 로그인 페이지로 리다이렉트 (현재 페이지가 로그인 페이지가 아닌 경우에만)
     if (window.location.pathname !== "/login") {
       window.location.href = "/login";
     }
@@ -200,7 +200,7 @@ export const refreshAccessToken = async () => {
 
 export const logout = async () => {
   try {
-
+    // 서버에 로그아웃 요청
     await fetch("/api/auth/logout", {
       method: "POST",
       credentials: "include",
@@ -211,17 +211,17 @@ export const logout = async () => {
   } catch (error) {
     console.error("Failed to logout:", error);
   } finally {
-
+    // 로컬 상태 초기화 (accessToken, user 정보만)
     useAuthStore.getState().clearAuth();
-
+    // refreshToken 쿠키 제거
     await fetch("/api/auth/remove-refresh-token", {
       method: "POST",
       credentials: "include",
     });
 
-    
+    // 🎯 중요: 이메일 정보는 유지! 로그인 상태 유지 설정만 해제
     localStorage.removeItem("keepLoggedIn");
-
+    // localStorage.removeItem("loginEmail"); // 이메일은 삭제하지 않음!
   }
 };
 
@@ -239,5 +239,5 @@ export const getSavedLoginEmail = () => {
 
 export const clearLoginPreferences = () => {
   localStorage.removeItem("keepLoggedIn");
-
+  // localStorage.removeItem("loginEmail"); // 이메일은 삭제하지 않음!
 };

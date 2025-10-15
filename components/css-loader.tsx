@@ -6,7 +6,7 @@ export default function CSSLoader() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-
+    // CSS 로딩 완료 확인
     const checkCSSLoaded = () => {
       const testElement = document.createElement('div');
       testElement.className = 'bg-background text-foreground';

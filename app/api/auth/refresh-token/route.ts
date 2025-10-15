@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-
+// This route exchanges the httpOnly refresh token cookie for a new access token
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -14,10 +14,10 @@ export async function GET() {
       );
     }
 
-
+    // 백엔드로 토큰 갱신 요청
     const response = await fetch(
       `${
-        process.env.NEXT_PUBLIC_API_URL || "http:
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
       }/api/v1/members/refresh-token`,
       {
         method: "POST",
@@ -38,7 +38,7 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data.data); 
+    return NextResponse.json(data.data); // 백엔드 응답 구조에 맞춤
   } catch (error) {
     console.error("Error refreshing token:", error);
     return NextResponse.json(

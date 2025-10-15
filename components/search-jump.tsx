@@ -18,7 +18,7 @@ import {
 import { useAuthStore } from "@/app/utils/auth";
 import { useRouter } from "next/navigation";
 
-
+// 검색 결과 타입
 interface SearchResult {
   id: string;
   name: string;
@@ -29,7 +29,7 @@ interface SearchResult {
   icon: React.ReactNode;
 }
 
-
+// 최근 검색/즐겨찾기 타입
 interface RecentSearch {
   id: string;
   name: string;
@@ -43,7 +43,7 @@ interface RecentSearch {
 interface SearchJumpProps {
   regions: any[];
   onLocationSelect: (lat: number, lng: number) => void;
-  onResetMap?: () => void; 
+  onResetMap?: () => void; // 지도 상태 초기화를 위한 추가 콜백
 }
 
 export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJumpProps) {
@@ -57,10 +57,10 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   const [showRecentSearches, setShowRecentSearches] = useState(false);
 
-
+  // 검색 디바운싱을 위한 ref
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-
+  // 최근 검색 로드
   useEffect(() => {
     const saved = localStorage.getItem("recentSearches");
     if (saved) {
@@ -72,7 +72,7 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
     }
   }, []);
 
-
+  // 최근 검색 저장
   const saveRecentSearch = useCallback((search: Omit<RecentSearch, "timestamp" | "isFavorite">) => {
     const newSearch: RecentSearch = {
       ...search,
@@ -82,13 +82,13 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
 
     setRecentSearches(prev => {
       const filtered = prev.filter(item => item.id !== search.id);
-      const updated = [newSearch, ...filtered].slice(0, 10); 
+      const updated = [newSearch, ...filtered].slice(0, 10); // 최대 10개 유지
       localStorage.setItem("recentSearches", JSON.stringify(updated));
       return updated;
     });
   }, []);
 
-
+  // 즐겨찾기 토글
   const toggleFavorite = useCallback((searchId: string) => {
     setRecentSearches(prev => {
       const updated = prev.map(item => 
@@ -101,7 +101,7 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
     });
   }, []);
 
-
+  // 검색 실행
   const performSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
@@ -110,10 +110,10 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
 
     setIsSearching(true);
     try {
-
+      // 카카오맵 API를 사용한 검색 (실제 구현 시 카카오맵 API 키 필요)
       const results: SearchResult[] = [];
 
-
+      // 지역 검색 (regions 배열에서 검색)
       const regionMatches = regions.filter(region =>
         region.name.toLowerCase().includes(query.toLowerCase())
       ).slice(0, 3);
@@ -129,7 +129,7 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
         });
       });
 
-
+      // 임시 데이터 (실제로는 카카오맵 API 사용)
       const mockResults: SearchResult[] = [
         {
           id: "subway-1",
@@ -160,7 +160,7 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
         }
       ];
 
-
+      // 검색어가 포함된 결과만 필터링
       const filteredMockResults = mockResults.filter(result =>
         result.name.toLowerCase().includes(query.toLowerCase()) ||
         result.address?.toLowerCase().includes(query.toLowerCase())
@@ -175,13 +175,13 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
     }
   }, [regions]);
 
-
+  // 검색어 변경 핸들러
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
     setShowSearchResults(true);
     setShowRecentSearches(false);
 
-
+    // 디바운싱
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
@@ -191,14 +191,14 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
     }, 300);
   }, [performSearch]);
 
-
+  // 검색 결과 클릭 핸들러
   const handleSearchResultClick = useCallback((result: SearchResult) => {
     onLocationSelect(result.latitude, result.longitude);
     setSearchQuery(result.name);
     setShowSearchResults(false);
     setShowRecentSearches(false);
 
-
+    // 최근 검색에 추가
     saveRecentSearch({
       id: result.id,
       name: result.name,
@@ -208,7 +208,7 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
     });
   }, [onLocationSelect, saveRecentSearch]);
 
-
+  // 최근 검색 클릭 핸들러
   const handleRecentSearchClick = useCallback((search: RecentSearch) => {
     onLocationSelect(search.latitude, search.longitude);
     setSearchQuery(search.name);
@@ -216,7 +216,7 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
     setShowRecentSearches(false);
   }, [onLocationSelect]);
 
-
+  // 내 위치로 이동 (지도 페이지 새로고침과 동일한 로직)
   const moveToUserLocation = useCallback(() => {
     console.log("📍 내 위치 버튼 클릭됨");
     console.log("📍 사용자 정보:", user);
@@ -235,21 +235,21 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
       const lng = Number(user.longitude);
       console.log("📍 지도 이동:", { lat, lng });
       
-
+      // 지도 페이지 새로고침과 동일한 로직 적용 (onResetMap에서 모든 처리)
       console.log("🔄 지도 상태 초기화 (새로고침 효과)");
       if (onResetMap) {
         onResetMap();
       }
     } else {
       console.log("❌ 사용자 위치 정보가 없습니다.");
-
+      // 사용자에게 알림 및 마이페이지로 이동 제안
       if (confirm("저장된 위치 정보가 없습니다. 마이페이지에서 위치를 설정하시겠습니까?")) {
         router.push("/mypage");
       }
     }
   }, [user?.latitude, user?.longitude, onLocationSelect, user, router]);
 
-
+  // 컴포넌트 언마운트 시 타임아웃 클리어
   useEffect(() => {
     return () => {
       if (searchTimeoutRef.current) {
@@ -261,6 +261,29 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
   return (
     <div className="fixed top-32 left-1/2 transform -translate-x-1/2 z-[80] w-full max-w-2xl px-4">
       <div className="relative">
+        {/* 검색창 */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="읍/면/동·지하철·건물명·우편번호 검색"
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            onFocus={() => {
+              setShowSearchResults(true);
+              setShowRecentSearches(true);
+            }}
+            onBlur={() => {
+              // 약간의 지연을 두어 클릭 이벤트가 처리되도록 함
+              setTimeout(() => {
+                setShowSearchResults(false);
+                setShowRecentSearches(false);
+              }, 200);
+            }}
+            className="pl-10 pr-20 h-12 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-green-200 dark:border-green-700 focus:border-green-500 dark:focus:border-green-400 shadow-lg"
+          />
+          
+          {/* 내 위치 버튼 */}
           <Button
             onClick={moveToUserLocation}
             disabled={!user || !user?.latitude || !user?.longitude}
@@ -275,6 +298,45 @@ export function SearchJump({ regions, onLocationSelect, onResetMap }: SearchJump
           </Button>
         </div>
 
+        {/* 검색 결과 드롭다운 */}
+        {showSearchResults && (searchQuery || isSearching) && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-green-200 dark:border-green-700 max-h-80 overflow-y-auto z-50">
+            {isSearching ? (
+              <div className="p-4 text-center">
+                <Loader2 className="w-5 h-5 animate-spin mx-auto text-green-600" />
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">검색 중...</p>
+              </div>
+            ) : searchResults.length > 0 ? (
+              <div className="py-2">
+                {searchResults.map((result) => (
+                  <button
+                    key={result.id}
+                    onClick={() => handleSearchResultClick(result)}
+                    className="w-full px-4 py-3 text-left hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center gap-3"
+                  >
+                    {result.icon}
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        {result.name}
+                      </div>
+                      {result.address && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {result.address}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : searchQuery && (
+              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                검색 결과가 없습니다.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 최근 검색/즐겨찾기 드롭다운 */}
         {showRecentSearches && !searchQuery && recentSearches.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-green-200 dark:border-green-700 max-h-80 overflow-y-auto z-50">
             <div className="p-3 border-b border-green-200 dark:border-green-700">

@@ -43,12 +43,12 @@ export default function StockMention({
       const containerRect = container.getBoundingClientRect();
       const itemRect = selectedItem.getBoundingClientRect();
 
-
+      // 선택된 아이템이 컨테이너 밖에 있는지 확인
       if (itemRect.top < containerRect.top) {
-
+        // 위쪽으로 스크롤
         selectedItem.scrollIntoView({ behavior: "smooth", block: "start" });
       } else if (itemRect.bottom > containerRect.bottom) {
-
+        // 아래쪽으로 스크롤
         selectedItem.scrollIntoView({ behavior: "smooth", block: "end" });
       }
     }
@@ -82,7 +82,7 @@ export default function StockMention({
     }
   }, []);
 
-
+  // 섹터에 따라 이모지 할당
   const getStockEmoji = (sector?: string): string => {
     if (!sector) return "📊";
     if (sector.includes("전기") || sector.includes("전자")) return "⚡";
@@ -97,7 +97,7 @@ export default function StockMention({
     return "📊";
   };
 
-
+  // 매칭 타입에 따른 배지 정보
   const getMatchTypeBadge = (matchType?: string) => {
     if (!matchType) return null;
 
@@ -129,7 +129,7 @@ export default function StockMention({
     return () => clearTimeout(timeoutId);
   }, [query, searchStocks]);
 
-
+  // 선택된 인덱스가 변경될 때 스크롤 조정
   useEffect(() => {
     if (stocks.length > 0) {
       scrollToSelected();

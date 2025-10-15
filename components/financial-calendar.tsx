@@ -12,9 +12,9 @@ import {
   ChevronUp,
   X,
 } from "lucide-react";
+// 금융 캘린더 관련 타입과 API는 삭제됨 - 컴포넌트만 유지
 
-
-
+// 금융 일정 아이템 타입 정의
 interface FinancialScheduleItem {
   indicatorCode: string;
   nameKo: string;
@@ -30,7 +30,7 @@ interface FinancialScheduleItem {
   source: string;
 }
 
-
+// 금융 캘린더 컴포넌트 Props
 interface FinancialCalendarProps {
   className?: string;
   isCollapsed?: boolean;
@@ -58,11 +58,11 @@ export function FinancialCalendar({
     setError(null);
 
     try {
-
+      // 현재 날짜를 YYYY-MM-DD 형식으로
       const today = new Date();
       const baseDate = today.toISOString().split("T")[0];
 
-
+      // API 호출
       const response = await fetch(
         `/api/v1/calendar/weekly?baseDate=${baseDate}&includeAll=true`
       );
@@ -74,7 +74,7 @@ export function FinancialCalendar({
       const data = await response.json();
 
       if (data.success) {
-
+        // API 응답 데이터 변환
         const transformedIndicators: FinancialScheduleItem[] =
           data.data.items.map((item: any) => ({
             indicatorCode: item.indicatorCode,
@@ -103,7 +103,7 @@ export function FinancialCalendar({
       );
       setIsRealData(false);
 
-
+      // 오류 시 더미 데이터로 폴백
       const dummyIndicators: FinancialScheduleItem[] = [
         {
           indicatorCode: "CPI_M",
@@ -264,6 +264,92 @@ export function FinancialCalendar({
               </div>
             </div>
 
+            {/* 발표 시간 표시 */}
+            {indicator.publishedAt && (
+              <div className="mt-1 text-xs text-green-600 dark:text-green-400">
+                발표됨:{" "}
+                {new Date(indicator.publishedAt).toLocaleString("ko-KR")}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div
+        className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 p-3 ${className}`}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
+            📅 금융 캘린더
+          </h3>
+          {onToggle && (
+            <button
+              onClick={onToggle}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            >
+              {isCollapsed ? (
+                <ChevronDown className="w-3 h-3" />
+              ) : (
+                <ChevronUp className="w-3 h-3" />
+              )}
+            </button>
+          )}
+        </div>
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 animate-pulse"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-12"></div>
+              </div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-1"></div>
+              <div className="flex justify-between">
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg border border-red-200 dark:border-red-700 p-3 ${className}`}
+      >
+        <div className="text-center py-4">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-lg ${className} ${
+        isCollapsed ? "w-12" : "w-80"
+      } transition-all duration-300`}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <h3
+            className={`font-bold text-gray-900 dark:text-gray-100 ${
+              isCollapsed ? "text-xs" : "text-sm"
+            }`}
+          >
+            📅 금융 캘린더
+          </h3>
+          {/* 데이터 상태 표시 */}
           {!isCollapsed && (
             <div className="flex items-center gap-1">
               {isRealData ? (

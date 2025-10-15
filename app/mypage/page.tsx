@@ -22,7 +22,7 @@ import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 
-
+// 전역 타입 선언 제거 - 다른 파일에서 이미 선언됨
 
 export default function MyPage() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function MyPage() {
     longitude: "",
   });
 
-
+  // 최근 검증 가드: 10분 내 검증 없으면 /auth/verify 로 이동
   useEffect(() => {
     try {
       const ts = sessionStorage.getItem("recentlyVerifiedAt");
@@ -51,48 +51,48 @@ export default function MyPage() {
         return;
       }
     } catch (error) {
-
+      // 에러 발생 시에도 검증 페이지로 이동
       const redirect = encodeURIComponent("/mypage");
       router.replace(`/auth/verify?redirect=${redirect}`);
       return;
     }
   }, [router]);
 
-
+  // 지도 중심점 상태
   const [mapCenter, setMapCenter] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
 
-
+  // 마커 상태 관리
   const [currentMarker, setCurrentMarker] = useState<any>(null);
 
-
+  // 지도 인스턴스 참조
   const mapRef = useRef<any>(null);
 
-
+  // 지도 로드 완료 상태
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-
+  // 실제 좌표 상태 (form과 별도로 관리)
   const [actualCoordinates, setActualCoordinates] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
 
-
+  // 카카오맵 로더 설정
   const [mapLoading] = useKakaoLoader({
     appkey: process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY!,
     libraries: ["services"],
   });
 
-
+  // 지도가 이미 보이는 경우 활성화
   useEffect(() => {
     if (actualCoordinates && !mapLoading) {
       setIsMapLoaded(true);
     }
   }, [actualCoordinates, mapLoading]);
 
-
+  // 주소 검색 함수
   const handleAddressSearch = () => {
     if (!isMapLoaded) {
       alert("지도가 아직 로드되지 않았습니다. 잠시 기다려주세요.");
@@ -107,14 +107,14 @@ export default function MyPage() {
           zonecode: data.zonecode,
         }));
 
-
+        // 주소로 좌표 검색 (카카오맵 API가 로드된 후에만 실행)
         if (window.kakao && window.kakao.maps && !mapLoading) {
           const geocoder = new window.kakao.maps.services.Geocoder();
           geocoder.addressSearch(
             data.address,
             function (result: any, status: any) {
               if (status === window.kakao.maps.services.Status.OK) {
-
+                // 좌표 저장 (문자열이 아닌 숫자로 저장)
                 const newLat = parseFloat(result[0].y);
                 const newLng = parseFloat(result[0].x);
 
@@ -124,7 +124,7 @@ export default function MyPage() {
                   longitude: newLng.toString(),
                 }));
 
-
+                // 지도 중심 업데이트
                 const newCoords = {
                   lat: newLat,
                   lng: newLng,
@@ -132,12 +132,12 @@ export default function MyPage() {
                 setMapCenter(newCoords);
                 setActualCoordinates(newCoords);
 
-
+                // 기존 마커 제거
                 if (currentMarker) {
                   currentMarker.setMap(null);
                 }
 
-
+                // 새 마커 생성
                 const markerPosition = new window.kakao.maps.LatLng(
                   parseFloat(result[0].y),
                   parseFloat(result[0].x)
@@ -147,12 +147,12 @@ export default function MyPage() {
                   position: markerPosition,
                 });
 
-
+                // 마커를 지도에 표시
                 if (window.kakao && window.kakao.maps && mapRef.current) {
-
+                  // 새 마커를 지도에 표시
                   newMarker.setMap(mapRef.current);
 
-
+                  // 지도 중심을 새 위치로 이동
                   mapRef.current.panTo(markerPosition);
                 }
 
@@ -163,7 +163,7 @@ export default function MyPage() {
         }
       },
       onclose: function (state: any) {
-
+        // 팝업이 닫힐 때의 상태를 확인할 수 있음
       },
     }).open();
   };
@@ -187,7 +187,7 @@ export default function MyPage() {
         setForm(userForm);
         console.log("🎯 사용자 정보 로드됨:", userForm);
 
-
+        // 기존 주소가 있으면 지도 중심 설정
         if (userForm.latitude && userForm.longitude) {
           const coords = {
             lat: parseFloat(userForm.latitude),
@@ -213,7 +213,7 @@ export default function MyPage() {
   const onSaveLocation = async () => {
     setError(null);
     try {
-
+      // 좌표를 숫자로 변환
       const lat = form.latitude ? parseFloat(form.latitude) : null;
       const lng = form.longitude ? parseFloat(form.longitude) : null;
 
@@ -225,10 +225,10 @@ export default function MyPage() {
         longitude: lng,
       });
 
-
+      // 저장 완료 후 최신 정보 다시 가져오기
       const me = await getMyInfo();
 
-
+      // form과 actualCoordinates 업데이트
       const updatedForm = {
         name: me.name ?? "",
         email: me.email ?? "",
@@ -256,7 +256,7 @@ export default function MyPage() {
     }
   };
 
-
+  // 검증 상태 확인 (10분 내 검증 완료 여부)
   const isVerified = (() => {
     try {
       const ts = sessionStorage.getItem("recentlyVerifiedAt");
@@ -284,14 +284,51 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950 overflow-hidden relative transition-colors duration-500">
+      {/* 마우스 따라다니는 아이콘들 */}
+      <MouseFollower />
+
+      {/* 배경 패턴 */}
       <div className="absolute inset-0 pointer-events-none opacity-10 dark:opacity-5">
         <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:20px_20px]"></div>
       </div>
 
+      {/* Floating Stock Symbols (사용자 설정에 따라) */}
+      <FloatingEmojiBackground />
+
+      {/* 네비게이션 바 */}
       <NavBar />
 
+      {/* 실시간 주식 정보 */}
+      <div className="fixed top-16 left-0 right-0 z-[60]">
+        <StockTicker />
+      </div>
+
+      {/* 메인 컨텐츠 */}
       <main className="container mx-auto px-4 py-8 pt-36">
         <div className="max-w-4xl mx-auto">
+          {/* 헤더 섹션 */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 dark:from-green-500 dark:to-emerald-400 rounded-full mb-6 shadow-lg">
+              <User className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-green-800 dark:text-green-200 mb-4">
+              마이페이지
+            </h1>
+            <p className="text-lg text-green-600 dark:text-green-300 max-w-2xl mx-auto">
+              내 정보를 확인하고 관리할 수 있습니다
+            </p>
+          </div>
+
+          {error && (
+            <div
+              className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-center"
+              role="alert"
+            >
+              {error}
+            </div>
+          )}
+
+          {/* 기본 정보 카드 */}
           <Card className="mb-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800 shadow-xl">
             <CardHeader className="border-b border-green-100 dark:border-green-800">
               <CardTitle className="flex items-center gap-3 text-green-800 dark:text-green-200">
@@ -340,6 +377,17 @@ export default function MyPage() {
             </CardContent>
           </Card>
 
+          {/* 위치 정보 카드 */}
+          <Card className="mb-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800 shadow-xl">
+            <CardHeader className="border-b border-green-100 dark:border-green-800">
+              <CardTitle className="flex items-center gap-3 text-green-800 dark:text-green-200">
+                <MapPin className="w-5 h-5" />
+                위치 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 주소 입력 섹션 */}
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-green-700 dark:text-green-300">
@@ -403,6 +451,85 @@ export default function MyPage() {
                   </Button>
                 </div>
 
+                {/* 카카오맵 섹션 */}
+                <div className="space-y-2">
+                  <div className="w-full h-80 rounded-lg border-2 border-green-200 dark:border-green-700 overflow-hidden shadow-lg">
+                    {mapLoading ? (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
+                          <p className="text-sm text-green-600 dark:text-green-400">
+                            지도를 불러오는 중...
+                          </p>
+                        </div>
+                      </div>
+                    ) : actualCoordinates && !mapLoading ? (
+                      <div className="relative w-full h-full bg-blue-100 dark:bg-blue-900">
+                        <Map
+                          center={actualCoordinates}
+                          style={{ width: "100%", height: "100%" }}
+                          level={3}
+                          draggable={false}
+                          zoomable={false}
+                          scrollwheel={false}
+                          keyboardShortcuts={false}
+                          disableDoubleClickZoom={true}
+                          onDoubleClick={() => false}
+                          onLoad={(map) => {
+                            // 지도 로드 완료 후 마커 추가
+                            if (window.kakao && window.kakao.maps) {
+                              const markerPosition =
+                                new window.kakao.maps.LatLng(
+                                  actualCoordinates.lat,
+                                  actualCoordinates.lng
+                                );
+
+                              const marker = new window.kakao.maps.Marker({
+                                position: markerPosition,
+                                map: map,
+                              });
+
+                              // 마커를 지도에 표시하고 상태에 저장
+                              marker.setMap(map);
+                              setCurrentMarker(marker);
+
+                              // 지도 인스턴스 저장
+                              mapRef.current = map;
+                              setIsMapLoaded(true);
+
+                              // 더블클릭 확대 방지 (지도 인스턴스에 직접 설정)
+                              try {
+                                if (window.kakao && window.kakao.maps) {
+                                  // 카카오맵의 더블클릭 줌 비활성화
+                                  const mapInstance = map as any;
+                                  if (mapInstance.setZoomable) {
+                                    mapInstance.setZoomable(false);
+                                  }
+                                }
+                              } catch (error) {
+                                // 에러가 발생해도 지도는 정상 작동
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                        <div className="text-center">
+                          <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            주소 검색 버튼을 클릭하여 위치를 확인하세요
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 소셜 계정 연동 카드 */}
           <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800 shadow-xl">
             <CardHeader className="border-b border-green-100 dark:border-green-800">
               <CardTitle className="flex items-center gap-3 text-green-800 dark:text-green-200">
@@ -414,7 +541,7 @@ export default function MyPage() {
             </CardHeader>
             <CardContent className="p-6">
               {user?.email?.includes("kakao") ? (
-
+                // 카카오 회원인 경우
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-2xl">🎯</span>
@@ -447,7 +574,7 @@ export default function MyPage() {
                   </div>
                 </div>
               ) : (
-
+                // 일반 회원인 경우
                 <div className="text-center">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="text-2xl">🔗</span>
@@ -460,7 +587,7 @@ export default function MyPage() {
                       variant="outline"
                       className="w-full border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                       onClick={() => {
-
+                        // 카카오 연동 로직 (구현 예정)
                         console.log("카카오 연동 시도");
                       }}
                     >
@@ -483,7 +610,7 @@ export default function MyPage() {
           </Card>
         </div>
       </main>
-      <Script src="
+      <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" />
     </div>
   );
 }

@@ -9,14 +9,14 @@ export default function TestNotificationPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [testResult, setTestResult] = useState<string>("");
 
-
+  // 테스트 알림 생성
   const createTestNotification = async () => {
     setIsLoading(true);
     setTestResult("");
 
     try {
       const response = await fetch(
-        "http:
+        "http://localhost:8080/api/test/notification",
         {
           method: "POST",
           headers: {
@@ -43,13 +43,13 @@ export default function TestNotificationPage() {
     }
   };
 
-
+  // 헬스 체크
   const checkHealth = async () => {
     setIsLoading(true);
     setTestResult("");
 
     try {
-      const response = await fetch("http:
+      const response = await fetch("http://localhost:8080/api/test/health");
       const result = await response.json();
 
       if (response.ok) {
@@ -76,6 +76,23 @@ export default function TestNotificationPage() {
         </h1>
 
         <div className="space-y-6">
+          {/* 헬스 체크 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>서버 상태 확인</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button
+                onClick={checkHealth}
+                disabled={isLoading}
+                className="w-full"
+              >
+                {isLoading ? "확인 중..." : "서버 상태 확인"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* 테스트 알림 생성 */}
           <Card>
             <CardHeader>
               <CardTitle>테스트 알림 생성</CardTitle>
@@ -91,6 +108,21 @@ export default function TestNotificationPage() {
             </CardContent>
           </Card>
 
+          {/* 결과 표시 */}
+          {testResult && (
+            <Card>
+              <CardHeader>
+                <CardTitle>테스트 결과</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto text-sm">
+                  {testResult}
+                </pre>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 사용법 안내 */}
           <Card>
             <CardHeader>
               <CardTitle>사용법</CardTitle>

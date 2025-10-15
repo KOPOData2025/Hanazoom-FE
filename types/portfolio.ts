@@ -61,33 +61,33 @@ export interface TradeHistory {
 }
 
 export interface PortfolioSummary {
-
+  // 계좌 정보
   accountId: number;
   accountNumber: string;
   accountName: string;
   balanceDate: string;
 
-
+  // 현금 잔고
   availableCash: number;
   settlementCash: number;
   withdrawableCash: number;
   frozenCash: number;
   totalCash: number;
 
-
+  // 주식 정보
   totalStockCount: number;
   totalStockValue: number;
   totalProfitLoss: number;
   totalProfitLossRate: number;
 
-
+  // 총 잔고
   totalBalance: number;
 
-
+  // 자산 배분
   cashAllocationRate: number;
   stockAllocationRate: number;
 
-
+  // 수익률
   dailyReturn: number;
   monthlyReturn: number;
   yearlyReturn: number;
@@ -110,7 +110,7 @@ export interface SettlementSchedule {
   updatedAt: string;
 }
 
-
+// 가상 주식 데이터 (테스트용)
 export interface MockStockData {
   symbol: string;
   name: string;

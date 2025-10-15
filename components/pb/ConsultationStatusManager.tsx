@@ -48,7 +48,7 @@ export default function ConsultationStatusManager({
       id: "consultation-001",
       clientName: "김고객",
       clientRegion: "서울시 강남구",
-      scheduledTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), 
+      scheduledTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2시간 후
       status: "PENDING",
       type: "PORTFOLIO_ANALYSIS",
       duration: 30,
@@ -58,7 +58,7 @@ export default function ConsultationStatusManager({
       id: "consultation-002",
       clientName: "이고객",
       clientRegion: "서울시 서초구",
-      scheduledTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), 
+      scheduledTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), // 4시간 후
       status: "APPROVED",
       type: "STOCK_CONSULTATION",
       duration: 45,
@@ -68,7 +68,7 @@ export default function ConsultationStatusManager({
       id: "consultation-003",
       clientName: "박고객",
       clientRegion: "서울시 송파구",
-      scheduledTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), 
+      scheduledTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2시간 전
       status: "IN_PROGRESS",
       type: "PRODUCT_CONSULTATION",
       duration: 60,
@@ -76,7 +76,7 @@ export default function ConsultationStatusManager({
     },
   ]);
 
-
+  // 상태별 색상 매핑
   const getStatusColor = (status: string) => {
     switch (status) {
       case "PENDING":
@@ -95,7 +95,7 @@ export default function ConsultationStatusManager({
     }
   };
 
-
+  // 상태별 텍스트 매핑
   const getStatusText = (status: string) => {
     switch (status) {
       case "PENDING":
@@ -115,7 +115,7 @@ export default function ConsultationStatusManager({
     }
   };
 
-
+  // 상담 유형별 텍스트 매핑
   const getTypeText = (type: string) => {
     switch (type) {
       case "PORTFOLIO_ANALYSIS":
@@ -131,7 +131,7 @@ export default function ConsultationStatusManager({
     }
   };
 
-
+  // 상태 변경 함수
   const changeStatus = (consultationId: string, newStatus: string) => {
     setConsultations((prev) =>
       prev.map((consultation) =>
@@ -146,13 +146,13 @@ export default function ConsultationStatusManager({
     }
   };
 
-
+  // 새 상담 생성
   const createNewConsultation = () => {
     const newConsultation: Consultation = {
       id: `consultation-${Date.now()}`,
       clientName: `고객${Math.floor(Math.random() * 100)}`,
       clientRegion: "서울시 강남구",
-      scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), 
+      scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 내일
       status: "PENDING",
       type: "GENERAL_CONSULTATION",
       duration: 30,
@@ -162,7 +162,7 @@ export default function ConsultationStatusManager({
     setConsultations((prev) => [...prev, newConsultation]);
   };
 
-
+  // 상담 삭제
   const deleteConsultation = (consultationId: string) => {
     setConsultations((prev) => prev.filter((c) => c.id !== consultationId));
   };
@@ -230,4 +230,92 @@ export default function ConsultationStatusManager({
                     {consultation.notes}
                   </div>
                 )}
+
+                {/* 상태 변경 버튼들 */}
+                <div className="flex gap-2 flex-wrap">
+                  {consultation.status === "PENDING" && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          changeStatus(consultation.id, "APPROVED")
+                        }
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        승인
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() =>
+                          changeStatus(consultation.id, "REJECTED")
+                        }
+                      >
+                        <XCircle className="w-4 h-4 mr-1" />
+                        거절
+                      </Button>
+                    </>
+                  )}
+
+                  {consultation.status === "APPROVED" && (
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        changeStatus(consultation.id, "IN_PROGRESS")
+                      }
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Play className="w-4 h-4 mr-1" />
+                      상담 시작
+                    </Button>
+                  )}
+
+                  {consultation.status === "IN_PROGRESS" && (
+                    <Button
+                      size="sm"
+                      onClick={() => changeStatus(consultation.id, "COMPLETED")}
+                      className="bg-gray-600 hover:bg-gray-700 text-white"
+                    >
+                      <Pause className="w-4 h-4 mr-1" />
+                      상담 완료
+                    </Button>
+                  )}
+
+                  {(consultation.status === "PENDING" ||
+                    consultation.status === "APPROVED") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => changeStatus(consultation.id, "CANCELLED")}
+                    >
+                      <XCircle className="w-4 h-4 mr-1" />
+                      취소
+                    </Button>
+                  )}
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => deleteConsultation(consultation.id)}
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                  >
+                    삭제
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {consultations.length === 0 && (
+        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <p>등록된 상담이 없습니다.</p>
+        </div>
+      )}
+    </div>
+  );
+}
 

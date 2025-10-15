@@ -55,7 +55,7 @@ export function TradingViewRealtimeChart({
 
   const currentStockData = getStockData(stockCode);
 
-
+  // 실시간 데이터 추가
   useEffect(() => {
     if (currentStockData) {
       const timestamp = new Date().toLocaleTimeString("ko-KR", {
@@ -70,7 +70,7 @@ export function TradingViewRealtimeChart({
         value: price,
       };
 
-
+      // 차트 데이터 상태 업데이트 (최근 100개 포인트 유지)
       setChartData((prev) => {
         const newData = [...prev, newDataPoint];
         return newData.slice(-100);
@@ -78,7 +78,7 @@ export function TradingViewRealtimeChart({
     }
   }, [currentStockData]);
 
-
+  // 전체화면 토글
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
     if (isFullscreen) {
@@ -88,12 +88,12 @@ export function TradingViewRealtimeChart({
     }
   };
 
-
+  // 차트 새로고침
   const refreshChart = () => {
     setChartData([]);
   };
 
-
+  // 가격 변화에 따른 색상 결정
   const getPriceColor = () => {
     if (!currentStockData) return "#6b7280";
 
@@ -105,7 +105,7 @@ export function TradingViewRealtimeChart({
     return "#6b7280";
   };
 
-
+  // 가격 변화율 계산
   const getPriceChange = () => {
     if (!currentStockData) return { change: 0, changePercent: 0 };
 
@@ -119,7 +119,7 @@ export function TradingViewRealtimeChart({
 
   const { change, changePercent } = getPriceChange();
 
-
+  // 커스텀 툴팁
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -178,6 +178,66 @@ export function TradingViewRealtimeChart({
           </div>
         </div>
 
+        {/* 실시간 가격 정보 */}
+        {currentStockData && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div>
+                <span
+                  className="text-2xl font-bold"
+                  style={{ color: getPriceColor() }}
+                >
+                  {parseFloat(currentStockData.currentPrice).toLocaleString()}원
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {change > 0 ? (
+                  <TrendingUp className="h-5 w-5 text-red-600" />
+                ) : change < 0 ? (
+                  <TrendingDown className="h-5 w-5 text-blue-600" />
+                ) : null}
+                <span
+                  className={`text-lg font-semibold ${
+                    change > 0
+                      ? "text-red-600"
+                      : change < 0
+                      ? "text-blue-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {change > 0 ? "+" : ""}
+                  {change.toLocaleString()}원
+                </span>
+                <span
+                  className={`text-sm ${
+                    change > 0
+                      ? "text-red-600"
+                      : change < 0
+                      ? "text-blue-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  ({change > 0 ? "+" : ""}
+                  {changePercent.toFixed(2)}%)
+                </span>
+              </div>
+            </div>
+
+            <div className="text-right text-sm text-gray-500">
+              <div>
+                전일종가:{" "}
+                {parseFloat(currentStockData.previousClose).toLocaleString()}원
+              </div>
+              <div>
+                거래량: {parseInt(currentStockData.volume).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent>
+        {/* 트레이딩뷰 스타일 실시간 차트 */}
         <div className="relative h-96 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -204,6 +264,38 @@ export function TradingViewRealtimeChart({
                 />
                 <Tooltip content={<CustomTooltip />} />
 
+                {/* 기준선 (전일종가) */}
+                {currentStockData && (
+                  <ReferenceLine
+                    y={parseFloat(currentStockData.previousClose)}
+                    stroke="#9ca3af"
+                    strokeDasharray="2 2"
+                    label={{ value: "전일종가", position: "right" }}
+                  />
+                )}
+
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke={getPriceColor()}
+                  strokeWidth={2}
+                  dot={{ fill: getPriceColor(), strokeWidth: 1, r: 2 }}
+                  activeDot={{ r: 4, stroke: getPriceColor(), strokeWidth: 2 }}
+                  connectNulls={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-gray-500">
+                <Activity className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>실시간 데이터를 기다리는 중...</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 차트 통계 */}
         {chartData.length > 0 && (
           <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div className="text-center">

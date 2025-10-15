@@ -24,7 +24,7 @@ export interface Post {
   hasVote?: boolean;
   voteQuestion?: string;
   voteOptions?: VoteOption[];
-  userVote?: string; 
+  userVote?: string; // 사용자가 선택한 투표 옵션 ID
   author: {
     id: string;
     name: string;
@@ -75,7 +75,7 @@ export interface PostListResponse {
   empty: boolean;
 }
 
-
+// Posts
 export const getPosts = async (
   symbol: string,
   page = 0,
@@ -85,7 +85,7 @@ export const getPosts = async (
     params: { page, size },
   });
   
-
+  // API 응답에서 좋아요 상태 확인
   const likedPosts = response.data.data.content?.filter((post: any) => post.isLiked === true) || [];
   console.log("🔍 API 응답 - 좋아요 상태:", {
     totalPosts: response.data.data.content?.length || 0,
@@ -124,7 +124,7 @@ export const unlikePost = async (postId: number): Promise<void> => {
   await api.delete(`/community/posts/${postId}/like`);
 };
 
-
+// 투표 관련 API
 export const voteOnPost = async (
   postId: number,
   optionId: string
@@ -143,7 +143,7 @@ export const getPostVoteResults = async (
   return response.data.data;
 };
 
-
+// Comments
 
 export const createComment = async (
   postId: number,
@@ -165,7 +165,7 @@ export const deleteComment = async (commentId: number): Promise<void> => {
   await api.delete(`/community/comments/${commentId}`);
 };
 
-
+// 게시글 수정
 export const updatePost = async (
   postId: number,
   data: {
@@ -178,7 +178,7 @@ export const updatePost = async (
   return response.data.data;
 };
 
-
+// 게시글 삭제
 export const deletePost = async (postId: number): Promise<void> => {
   await api.delete(`/community/posts/${postId}`);
 };
@@ -191,7 +191,7 @@ export const unlikeComment = async (commentId: number): Promise<void> => {
   await api.delete(`/community/comments/${commentId}/like`);
 };
 
-
+// 댓글 목록 조회
 export const getComments = async (
   postId: number,
   page = 0,
@@ -212,7 +212,7 @@ export const getComments = async (
   return response.data.data;
 };
 
-
+// Replies (대댓글)
 export const getReplies = async (commentId: number): Promise<Comment[]> => {
   const response = await api.get(`/community/comments/${commentId}/replies`);
   return response.data.data;
@@ -229,7 +229,7 @@ export const createReply = async (
   return response.data.data;
 };
 
-
+// 지역별 채팅 관련 API
 export const getRegionChatInfo = async (): Promise<any> => {
   const response = await api.get("/chat/region-info");
   return response.data.data;

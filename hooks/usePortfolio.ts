@@ -10,7 +10,7 @@ import {
   SettlementSchedule,
 } from "@/types/portfolio";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http:
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export const usePortfolio = () => {
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export const usePortfolio = () => {
         if (attempt === maxRetries) {
           throw err;
         }
-
+        // 재시도 전 잠시 대기
         await new Promise((resolve) =>
           setTimeout(resolve, delay * (attempt + 1))
         );
@@ -39,7 +39,7 @@ export const usePortfolio = () => {
     return null;
   };
 
-
+  // 포트폴리오 요약 조회
   const getPortfolioSummary = async (): Promise<PortfolioSummary | null> => {
     setLoading(true);
     setError(null);
@@ -81,7 +81,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 포트폴리오 주식 목록 조회
   const getPortfolioStocks = async (): Promise<PortfolioStock[]> => {
     setLoading(true);
     setError(null);
@@ -123,7 +123,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 거래 내역 조회
   const getTradeHistory = async (): Promise<TradeHistory[]> => {
     setLoading(true);
     setError(null);
@@ -173,7 +173,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 거래 결과 조회
   const getTradeResult = async (): Promise<TradeResult | null> => {
     setLoading(true);
     setError(null);
@@ -218,7 +218,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 정산 일정 조회
   const getSettlementSchedule =
     async (): Promise<SettlementSchedule | null> => {
       setLoading(true);
@@ -266,7 +266,7 @@ export const usePortfolio = () => {
       }
     };
 
-
+  // 계좌 정보 조회
   const getAccountInfo = async (): Promise<Account | null> => {
     setLoading(true);
     setError(null);
@@ -308,7 +308,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 계좌 잔고 조회
   const getAccountBalance = async (): Promise<AccountBalance | null> => {
     setLoading(true);
     setError(null);
@@ -353,7 +353,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 주식 매수
   const buyStock = async (
     stockCode: string,
     quantity: number,
@@ -398,7 +398,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 주식 매도
   const sellStock = async (
     stockCode: string,
     quantity: number,
@@ -443,7 +443,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 주식 조회
   const getStockInfo = async (
     stockCode: string
   ): Promise<PortfolioStock | null> => {
@@ -488,7 +488,7 @@ export const usePortfolio = () => {
     }
   };
 
-
+  // 주식 검색
   const searchStocks = async (keyword: string): Promise<PortfolioStock[]> => {
     setLoading(true);
     setError(null);

@@ -62,9 +62,9 @@ export function TradingTabs({
               isWebSocketConnected={isWebSocketConnected}
               onRefresh={onRefresh}
               onPriceClick={(price) => {
-
+                // 호가창 가격 클릭 시 주문 탭으로 이동하고 가격 설정
                 setActiveTab("order");
-
+                // 주문 패널에 가격 전달 (ref를 통해)
                 if (orderPanelRef.current) {
                   orderPanelRef.current.setPrice(price);
                 }
@@ -93,6 +93,31 @@ export function TradingTabs({
 
   return (
     <Card className="h-[700px] lg:h-[800px] xl:h-[900px] 2xl:h-[1000px] bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-green-200 dark:border-green-700 shadow-lg">
+      {/* 탭 헤더 */}
+      <CardHeader className="pb-3">
+        <div className="flex gap-1">
+          {tabs.map((tab) => (
+            <Button
+              key={tab.id}
+              variant={activeTab === tab.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveTab(tab.id as TabType)}
+              className={`flex-1 transition-all duration-200 ${
+                activeTab === tab.id
+                  ? tab.id === "order"
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-green-600 hover:bg-green-700"
+                  : "hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+            >
+              <span className="mr-2">{tab.icon}</span>
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+      </CardHeader>
+
+      {/* 탭 컨텐츠 */}
       <CardContent className="p-4 h-[620px] lg:h-[720px] xl:h-[820px] 2xl:h-[1120px] overflow-hidden">
         {renderTabContent()}
       </CardContent>

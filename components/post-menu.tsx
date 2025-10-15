@@ -89,6 +89,25 @@ export function PostMenu({
         className="w-48"
         sideOffset={5}
       >
+        {/* 소유자 전용 메뉴 */}
+        {isOwner && (
+          <>
+            <DropdownMenuItem onClick={onEdit} className="cursor-pointer">
+              <Edit className="mr-2 h-4 w-4" />
+              수정
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={onDelete} 
+              className="cursor-pointer text-red-600 focus:text-red-600"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              삭제
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        {/* 공통 메뉴 */}
         <DropdownMenuItem onClick={handleCopyLink} className="cursor-pointer">
           <Copy className="mr-2 h-4 w-4" />
           링크 복사
@@ -106,3 +125,20 @@ export function PostMenu({
           통계 보기
         </DropdownMenuItem>
 
+        {/* 비소유자 전용 메뉴 */}
+        {!isOwner && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              onClick={handleReport} 
+              className="cursor-pointer text-red-600 focus:text-red-600"
+            >
+              <Flag className="mr-2 h-4 w-4" />
+              신고
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

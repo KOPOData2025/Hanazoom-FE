@@ -25,6 +25,9 @@ export interface MinuteInterval {
 }
 
 export const minuteApi = {
+  /**
+   * 특정 종목의 특정 분봉 간격 데이터 조회 (최근 N개)
+   */
   getRecentMinutePrices: async (
     stockSymbol: string,
     minuteInterval: StockMinutePrice['minuteInterval'],
@@ -39,6 +42,9 @@ export const minuteApi = {
     return response.data;
   },
 
+  /**
+   * 특정 종목의 특정 분봉 간격 데이터 조회 (시간 범위 지정)
+   */
   getMinutePricesByTimeRange: async (
     stockSymbol: string,
     minuteInterval: StockMinutePrice['minuteInterval'],
@@ -54,6 +60,9 @@ export const minuteApi = {
     return response.data;
   },
 
+  /**
+   * 특정 종목의 특정 분봉 간격 데이터 개수 조회
+   */
   getMinutePriceCount: async (
     stockSymbol: string,
     minuteInterval: StockMinutePrice['minuteInterval']
@@ -64,6 +73,9 @@ export const minuteApi = {
     return response.data;
   },
 
+  /**
+   * 오래된 분봉 데이터 정리
+   */
   cleanupOldMinutePrices: async (
     stockSymbol: string,
     minuteInterval: StockMinutePrice['minuteInterval'],
@@ -77,11 +89,17 @@ export const minuteApi = {
     );
   },
 
+  /**
+   * 특정 종목의 모든 분봉 데이터 삭제
+   */
   deleteAllMinutePrices: async (stockSymbol: string): Promise<void> => {
     await api.delete(`/api/stock-minute-prices/${stockSymbol}`);
   }
 };
 
+/**
+ * 분봉 간격을 사용자 친화적인 텍스트로 변환
+ */
 export const getMinuteIntervalLabel = (interval: StockMinutePrice['minuteInterval']): string => {
   switch (interval) {
     case 'ONE_MINUTE':
@@ -95,6 +113,9 @@ export const getMinuteIntervalLabel = (interval: StockMinutePrice['minuteInterva
   }
 };
 
+/**
+ * 분봉 간격을 프론트엔드 타임프레임 코드로 변환
+ */
 export const getMinuteIntervalTimeframe = (interval: StockMinutePrice['minuteInterval']): string => {
   switch (interval) {
     case 'ONE_MINUTE':
@@ -108,6 +129,9 @@ export const getMinuteIntervalTimeframe = (interval: StockMinutePrice['minuteInt
   }
 };
 
+/**
+ * 프론트엔드 타임프레임 코드를 분봉 간격으로 변환
+ */
 export const getTimeframeMinuteInterval = (timeframe: string): StockMinutePrice['minuteInterval'] => {
   switch (timeframe) {
     case '1M':

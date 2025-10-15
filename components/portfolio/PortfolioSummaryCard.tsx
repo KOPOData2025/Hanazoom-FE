@@ -18,13 +18,32 @@ export default function PortfolioSummaryCard({
     totalProfitLossRate,
   } = summary;
 
-
+  // 개발용 로그 제거
 
   const isProfit = (totalProfitLoss || 0) >= 0;
   const totalAssets = summary.totalBalance || 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* 총 자산 */}
+      <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800 hover:shadow-lg transition-all duration-300">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2 text-green-900 dark:text-green-100">
+            <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+            총 자산
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+            {totalAssets.toLocaleString()}원
+          </div>
+          <div className="text-sm text-green-600 dark:text-green-400 mt-1">
+            현금 + 주식 평가금액
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 평가손익 */}
       <Card
         className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm hover:shadow-lg transition-all duration-300 ${
           isProfit
@@ -64,6 +83,25 @@ export default function PortfolioSummaryCard({
         </CardContent>
       </Card>
 
+      {/* 보유 주식 */}
+      <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800 hover:shadow-lg transition-all duration-300">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2 text-green-900 dark:text-green-100">
+            <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+            보유 주식
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+            {totalStockCount || 0}종목
+          </div>
+          <div className="text-sm text-green-600 dark:text-green-400 mt-1">
+            {(totalStockValue || 0).toLocaleString()}원
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 사용가능 현금 */}
       <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800 hover:shadow-lg transition-all duration-300">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2 text-green-900 dark:text-green-100">

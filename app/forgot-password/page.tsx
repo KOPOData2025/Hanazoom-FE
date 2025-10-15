@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
   };
 
   const startCountdown = () => {
-    setCountdown(180); 
+    setCountdown(180); // 3분
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -190,6 +190,20 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden pt-28">
+        {/* 마우스 따라다니는 아이콘들 */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="floating-symbol absolute top-20 left-10 text-green-500 dark:text-green-400 text-2xl animate-bounce">
+            🔐
+          </div>
+          <div className="floating-symbol absolute top-40 right-20 text-emerald-600 dark:text-emerald-400 text-xl animate-pulse">
+            ✉️
+          </div>
+          <div className="floating-symbol absolute bottom-40 right-10 text-emerald-500 dark:text-emerald-400 text-2xl animate-pulse delay-500">
+            🔒
+          </div>
+        </div>
+
+        {/* 비밀번호 찾기 카드 */}
         <Card className="w-full max-w-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-700 shadow-2xl">
           <CardHeader className="text-center pb-4">
             <Link
@@ -214,6 +228,42 @@ export default function ForgotPasswordPage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
+            {/* 1단계: 이메일 입력 */}
+            {step === "email" && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="email"
+                    className="text-green-800 dark:text-green-200"
+                  >
+                    이메일
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleSendCode}
+                  disabled={isLoading || !formData.email}
+                  className="w-full h-12 text-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "발송 중..." : "인증 코드 발송"}
+                </Button>
+              </div>
+            )}
+
+            {/* 2단계: 인증 코드 입력 */}
             {step === "code" && (
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -262,3 +312,139 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
+            {/* 3단계: 새 비밀번호 설정 */}
+            {step === "password" && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="newPassword"
+                    className="text-green-800 dark:text-green-200"
+                  >
+                    새 비밀번호
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                      id="newPassword"
+                      name="newPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="8자 이상 입력"
+                      value={formData.newPassword}
+                      onChange={handleChange}
+                      className="pl-10 pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="confirmPassword"
+                    className="text-green-800 dark:text-green-200"
+                  >
+                    새 비밀번호 확인
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="비밀번호 재입력"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="pl-10 pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+
+                  {formData.confirmPassword && (
+                    <div className="flex items-center space-x-2 text-sm">
+                      {formData.newPassword === formData.confirmPassword ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <span className="text-green-600">
+                            비밀번호가 일치합니다
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-4 h-4 rounded-full border-2 border-red-300"></div>
+                          <span className="text-red-600">
+                            비밀번호가 일치하지 않습니다
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <Button
+                  onClick={handleResetPassword}
+                  disabled={
+                    isLoading ||
+                    !formData.newPassword ||
+                    !formData.confirmPassword ||
+                    formData.newPassword !== formData.confirmPassword
+                  }
+                  className="w-full h-12 text-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "처리 중..." : "비밀번호 재설정"}
+                </Button>
+              </div>
+            )}
+
+            <div className="text-center text-sm text-green-700 dark:text-green-300">
+              <Link
+                href="/login"
+                className="text-green-600 dark:text-green-400 hover:underline font-medium"
+              >
+                로그인으로 돌아가기
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <style jsx>{`
+          .floating-symbol {
+            animation: float 6s ease-in-out infinite;
+          }
+
+          @keyframes float {
+            0%,
+            100% {
+              transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+              transform: translateY(-20px) rotate(5deg);
+            }
+          }
+        `}</style>
+      </div>
+    </div>
+  );
+}

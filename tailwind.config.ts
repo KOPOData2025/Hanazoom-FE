@@ -3,6 +3,10 @@ import type { Config } from "tailwindcss";
 const config = {
   darkMode: ["class"],
   content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   prefix: "",
@@ -75,11 +79,11 @@ const config = {
           ring: "hsl(var(--sidebar-ring))",
         },
         hana: {
-          primary: "#1E3A8A",    
-          secondary: "#3B82F6",  
-          accent: "#F59E0B",     
-          light: "#EFF6FF",      
-          dark: "#1E40AF",       
+          primary: "#1E3A8A",    // 하나은행 메인 블루
+          secondary: "#3B82F6",  // 하나은행 서브 블루
+          accent: "#F59E0B",     // 하나은행 액센트 오렌지
+          light: "#EFF6FF",      // 연한 파란색
+          dark: "#1E40AF",       // 진한 파란색
         },
       },
       borderRadius: {

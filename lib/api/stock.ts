@@ -13,7 +13,7 @@ export interface Stock {
   marketCap: number | null;
 }
 
-
+// Elasticsearch 검색 결과 타입
 export interface StockSearchResult {
   symbol: string;
   name: string;
@@ -24,7 +24,7 @@ export interface StockSearchResult {
   score: number;
   matchType: string;
   highlightedName?: string;
-
+  // 프론트엔드 호환성 필드
   stockCode: string;
   stockName: string;
   price: string;
@@ -32,7 +32,7 @@ export interface StockSearchResult {
   changeRate: string;
 }
 
-
+// WTS 관련 타입 정의
 export interface StockPriceData {
   stockCode: string;
   stockName: string;
@@ -50,11 +50,11 @@ export interface StockPriceData {
   changeStatus: string;
   positiveChange: boolean;
   negativeChange: boolean;
-
+  // 장 운영 상태 관련 필드
   isMarketOpen: boolean;
   isAfterMarketClose: boolean;
   marketStatus: string;
-
+  // 호가창 데이터 필드들 (웹소켓 실시간 데이터)
   askOrders?: OrderBookItem[];
   bidOrders?: OrderBookItem[];
   totalAskQuantity?: string;
@@ -102,7 +102,7 @@ export const getStocks = async (page = 0, size = 20) => {
   return response.data;
 };
 
-
+// Elasticsearch 기반 주식 검색 (오타 허용 + 형태소 분석)
 export const searchStocks = async (
   query: string
 ): Promise<{ success: boolean; data: StockSearchResult[] }> => {
@@ -112,7 +112,7 @@ export const searchStocks = async (
   return response.data;
 };
 
-
+// 자동완성 제안
 export const suggestStocks = async (
   prefix: string
 ): Promise<{ success: boolean; data: string[] }> => {
@@ -122,7 +122,7 @@ export const suggestStocks = async (
   return response.data;
 };
 
-
+// 섹터별 검색
 export const searchStocksBySector = async (
   keyword: string,
   sector: string
@@ -133,7 +133,7 @@ export const searchStocksBySector = async (
   return response.data;
 };
 
-
+// Elasticsearch 수동 동기화 (관리자용)
 export const syncStocksToElasticsearch = async (): Promise<{
   success: boolean;
   data: string;
@@ -147,16 +147,16 @@ export const getTopStocksByRegion = async (regionId: number) => {
   return response.data;
 };
 
-
+// 지역×종목 인기도 상세(전일 기준, 뉴스 조각은 현재 숨김)
 export interface PopularityDetailsResponse {
   regionId: number;
   symbol: string;
   date: string;
-  score: number; 
-  tradeTrend: number; 
-  community: number; 
-  momentum: number; 
-  newsImpact: number; 
+  score: number; // 0~100 스케일 (최종 점수)
+  tradeTrend: number; // 0~100 스케일
+  community: number; // 0~100 스케일
+  momentum: number; // 0~100 스케일
+  newsImpact: number; // 0~100 스케일 (현재 0)
   weightTradeTrend: number;
   weightCommunity: number;
   weightMomentum: number;
@@ -187,7 +187,7 @@ export const getPopularityDetails = async (
   }
 };
 
-
+// WTS 관련 API 함수들
 export const getStockRealTimePrice = async (
   stockCode: string
 ): Promise<StockPriceData> => {
@@ -220,7 +220,7 @@ export const getStockOrderBook = async (
   return response.data.data;
 };
 
-
+// 여러 종목의 실시간 정보를 한번에 가져오는 함수 (나중에 배치 API 구현 시 사용)
 export const getMultipleStockPrices = async (
   stockCodes: string[]
 ): Promise<StockPriceData[]> => {
@@ -235,13 +235,13 @@ export const getMultipleStockPrices = async (
     .map((result) => result.value);
 };
 
-
+// 종목 코드 유효성 검증 함수
 export const validateStockCode = (stockCode: string): boolean => {
-
+  // 한국 주식 종목코드는 6자리 숫자
   return /^\d{6}$/.test(stockCode);
 };
 
-
+// 종목 검색 함수 (기존 것을 WTS용으로 확장)
 export const searchStocksWTS = async (query: string) => {
   const response = await api.get(API_ENDPOINTS.stockSearch, {
     params: { query },

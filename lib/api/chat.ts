@@ -1,7 +1,7 @@
 import { getAccessToken } from "@/app/utils/auth";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http:
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 export interface RegionChatMessage {
   id: string;
@@ -23,6 +23,14 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+/**
+ * 특정 지역의 이전 채팅 메시지를 조회합니다.
+ *
+ * @param regionId 지역 ID
+ * @param page 페이지 번호 (기본값: 0)
+ * @param size 페이지 크기 (기본값: 50)
+ * @returns 채팅 메시지 목록
+ */
 export async function getRegionMessages(
   regionId: number,
   page: number = 0,
@@ -64,6 +72,13 @@ export async function getRegionMessages(
   }
 }
 
+/**
+ * 특정 지역의 최근 N개 메시지를 조회합니다.
+ *
+ * @param regionId 지역 ID
+ * @param limit 조회할 메시지 개수 (기본값: 50)
+ * @returns 최근 채팅 메시지 목록
+ */
 export async function getRecentMessages(
   regionId: number,
   limit: number = 50
@@ -104,6 +119,12 @@ export async function getRecentMessages(
   }
 }
 
+/**
+ * 특정 지역의 총 메시지 개수를 조회합니다.
+ *
+ * @param regionId 지역 ID
+ * @returns 메시지 개수
+ */
 export async function getMessageCount(regionId: number): Promise<number> {
   try {
     const token = await getAccessToken();

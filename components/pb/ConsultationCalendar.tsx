@@ -41,10 +41,10 @@ export default function ConsultationCalendar({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-
+  // 컴포넌트가 처음 로드될 때 현재 월의 상담 데이터를 로드
   useEffect(() => {
     if (onDateRangeChange) {
-
+      // 로컬 시간 기준으로 날짜 범위 생성 (UTC 변환 방지)
       const startDateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       const endDateObj = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
       
@@ -53,9 +53,9 @@ export default function ConsultationCalendar({
       
       onDateRangeChange(startDate, endDate);
     }
-  }, []); 
+  }, []); // 빈 의존성 배열로 컴포넌트 마운트 시에만 실행
 
-
+  // 현재 월의 첫 번째 날과 마지막 날 계산
   const firstDayOfMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
@@ -69,7 +69,7 @@ export default function ConsultationCalendar({
   const firstDayOfWeek = firstDayOfMonth.getDay();
   const daysInMonth = lastDayOfMonth.getDate();
 
-
+  // 월 이름 배열
   const monthNames = [
     "1월",
     "2월",
@@ -85,25 +85,25 @@ export default function ConsultationCalendar({
     "12월",
   ];
 
-
+  // 요일 이름 배열
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
-
+  // 특정 날짜의 상담 이벤트 가져오기
   const getEventsForDate = (date: Date) => {
-
+    // 로컬 시간 기준으로 날짜 문자열 생성 (UTC 변환 방지)
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
     
     return consultations.filter((consultation) => {
-
+      // scheduledTime이 이미 로컬 시간 형식이므로 직접 날짜 추출
       const consultationDate = consultation.scheduledTime.split('T')[0];
       return consultationDate === dateStr;
     });
   };
 
-
+  // 상담 유형별 아이콘
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "video":
@@ -117,7 +117,7 @@ export default function ConsultationCalendar({
     }
   };
 
-
+  // 상담 유형별 색상
   const getTypeColor = (type: string) => {
     switch (type) {
       case "video":
@@ -131,7 +131,7 @@ export default function ConsultationCalendar({
     }
   };
 
-
+  // 상담 상태별 색상
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled":
@@ -147,12 +147,12 @@ export default function ConsultationCalendar({
     }
   };
 
-
+  // 이전 달로 이동
   const goToPreviousMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
     setCurrentDate(newDate);
     
-
+    // 날짜 범위 변경 콜백 호출 (로컬 시간 기준)
     if (onDateRangeChange) {
       const startDateObj = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
       const endDateObj = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
@@ -164,12 +164,12 @@ export default function ConsultationCalendar({
     }
   };
 
-
+  // 다음 달로 이동
   const goToNextMonth = () => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     setCurrentDate(newDate);
     
-
+    // 날짜 범위 변경 콜백 호출 (로컬 시간 기준)
     if (onDateRangeChange) {
       const startDateObj = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
       const endDateObj = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0);
@@ -181,13 +181,13 @@ export default function ConsultationCalendar({
     }
   };
 
-
+  // 오늘로 이동
   const goToToday = () => {
     const today = new Date();
     setCurrentDate(today);
     setSelectedDate(today);
     
-
+    // 날짜 범위 변경 콜백 호출 (로컬 시간 기준)
     if (onDateRangeChange) {
       const startDateObj = new Date(today.getFullYear(), today.getMonth(), 1);
       const endDateObj = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -199,11 +199,11 @@ export default function ConsultationCalendar({
     }
   };
 
-
+  // 달력 날짜 생성
   const generateCalendarDays = () => {
     const days = [];
 
-
+    // 이전 달의 마지막 날들
     const prevMonth = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() - 1,
@@ -219,7 +219,7 @@ export default function ConsultationCalendar({
       });
     }
 
-
+    // 현재 달의 날들
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(
         currentDate.getFullYear(),
@@ -237,7 +237,7 @@ export default function ConsultationCalendar({
       });
     }
 
-
+    // 다음 달의 첫 날들 (42개 셀을 채우기 위해)
     const remainingDays = 42 - days.length;
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(
@@ -260,6 +260,41 @@ export default function ConsultationCalendar({
 
   return (
     <div className="space-y-4">
+      {/* 캘린더 헤더 */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+            {currentDate.getFullYear()}년 {monthNames[currentDate.getMonth()]}
+          </h2>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousMonth}
+              className="p-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextMonth}
+              className="p-2"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToToday}
+              className="text-green-600 border-green-600 hover:bg-green-50"
+            >
+              오늘
+            </Button>
+          </div>
+        </div>
+
+        {/* 상담 유형 범례 */}
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-blue-100 border border-blue-200 rounded"></div>
@@ -282,14 +317,18 @@ export default function ConsultationCalendar({
         </div>
       </div>
 
+      {/* 캘린더 그리드 */}
+      <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800">
+        <CardContent className="p-0">
+          {/* 요일 헤더 */}
           <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700">
             {dayNames.map((day, index) => (
               <div
                 key={day}
                 className={`p-2 text-center font-semibold bg-gray-50 dark:bg-gray-800 ${
-                  index === 0 
+                  index === 0 // 일요일
                     ? "text-red-600 dark:text-red-400"
-                    : index === 6 
+                    : index === 6 // 토요일
                     ? "text-blue-600 dark:text-blue-400"
                     : "text-gray-600 dark:text-gray-400"
                 }`}
@@ -299,6 +338,30 @@ export default function ConsultationCalendar({
             ))}
           </div>
 
+          {/* 날짜 그리드 */}
+          <div className="grid grid-cols-7">
+            {calendarDays.map((day, index) => (
+              <div
+                key={`${day.date.getFullYear()}-${day.date.getMonth()}-${day.date.getDate()}-${index}`}
+                className={`
+                  min-h-[100px] border-r border-b border-gray-200 dark:border-gray-700 p-1
+                  ${
+                    !day.isCurrentMonth
+                      ? "bg-gray-50 dark:bg-gray-800/50"
+                      : "bg-white dark:bg-gray-900"
+                  }
+                  ${day.isToday ? "bg-green-50 dark:bg-green-900/20" : ""}
+                  ${
+                    selectedDate?.toDateString() === day.date.toDateString()
+                      ? "bg-blue-50 dark:bg-blue-900/20"
+                      : ""
+                  }
+                  hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer
+                `}
+                onClick={() => setSelectedDate(day.date)}
+              >
+                <div className="flex flex-col h-full">
+                  {/* 날짜 */}
                   <div
                     className={`
                     text-sm font-medium mb-1
@@ -313,6 +376,48 @@ export default function ConsultationCalendar({
                     {day.date.getDate()}
                   </div>
 
+                  {/* 상담 이벤트들 */}
+                  <div className="flex-1 space-y-1">
+                    {day.events.slice(0, 3).map((event, eventIndex) => (
+                      <div
+                        key={`${event.id}-${day.date.getDate()}-${eventIndex}`}
+                        className={`
+                          text-xs p-1 rounded border-l-2 cursor-pointer
+                          ${getTypeColor(event.type)} ${getStatusColor(
+                          event.status
+                        )}
+                          hover:shadow-sm transition-shadow
+                        `}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEventClick?.(event);
+                        }}
+                      >
+                        <div className="flex items-center gap-1">
+                          {getTypeIcon(event.type)}
+                          <span className="font-semibold text-xs truncate">
+                            {event.clientName}
+                          </span>
+                        </div>
+                        <div className="text-xs font-medium opacity-90">
+                          {event.scheduledTime.split('T')[1]?.substring(0, 5) || '00:00'}
+                        </div>
+                      </div>
+                    ))}
+                    {day.events.length > 3 && (
+                      <div className="text-xs text-gray-500 text-center">
+                        +{day.events.length - 3}개 더
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 선택된 날짜의 상담 상세 정보 */}
       {selectedDate && (
         <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800">
           <CardHeader className="pb-3">

@@ -16,7 +16,7 @@ export default function WebRTCMultiClientTestPage() {
   const [clientRegion, setClientRegion] = useState<string>('');
   const [showVideoRoom, setShowVideoRoom] = useState<boolean>(false);
 
-
+  // 컴포넌트 마운트 시 클라이언트 ID 생성
   useState(() => {
     setCurrentClientId(getCurrentClientId());
   });
@@ -52,6 +52,98 @@ export default function WebRTCMultiClientTestPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 설정 패널 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>클라이언트 설정</CardTitle>
+              <CardDescription>
+                각 클라이언트는 고유한 ID를 가지며, 서로 격리된 세션에서 동작합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="clientId">현재 클라이언트 ID</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="clientId"
+                    value={currentClientId}
+                    readOnly
+                    className="font-mono text-sm"
+                  />
+                  <Button 
+                    onClick={handleGenerateNewClientId}
+                    variant="outline"
+                    size="sm"
+                  >
+                    새 ID 생성
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  새로고침 시에도 유지되며, 새 ID 생성 시 이전 세션과 완전히 분리됩니다.
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="consultationId">상담 ID</Label>
+                <Input
+                  id="consultationId"
+                  value={consultationId}
+                  onChange={(e) => setConsultationId(e.target.value)}
+                  placeholder="예: 123e4567-e89b-12d3-a456-426614174000"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="clientName">고객 이름</Label>
+                <Input
+                  id="clientName"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="예: 홍길동"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="pbName">PB 이름</Label>
+                <Input
+                  id="pbName"
+                  value={pbName}
+                  onChange={(e) => setPbName(e.target.value)}
+                  placeholder="예: 김PB"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="clientRegion">고객 지역</Label>
+                <Input
+                  id="clientRegion"
+                  value={clientRegion}
+                  onChange={(e) => setClientRegion(e.target.value)}
+                  placeholder="예: 강남구"
+                />
+              </div>
+
+              <Button 
+                onClick={handleStartVideoCall}
+                className="w-full"
+                disabled={showVideoRoom}
+              >
+                화상채팅 시작
+              </Button>
+
+              {showVideoRoom && (
+                <Button 
+                  onClick={handleEndVideoCall}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  화상채팅 종료
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 사용법 안내 */}
           <Card>
             <CardHeader>
               <CardTitle>사용법 안내</CardTitle>
@@ -91,3 +183,28 @@ export default function WebRTCMultiClientTestPage() {
           </Card>
         </div>
 
+        {/* 화상채팅 룸 */}
+        {showVideoRoom && (
+          <Card>
+            <CardHeader>
+              <CardTitle>화상채팅 룸</CardTitle>
+              <CardDescription>
+                클라이언트 ID: {currentClientId} | 상담 ID: {consultationId}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <VideoConsultationRoom
+                consultationId={consultationId}
+                clientName={clientName}
+                clientRegion={clientRegion}
+                pbName={pbName}
+                clientId={currentClientId}
+                onEndConsultation={handleEndVideoCall}
+              />
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -128,6 +128,10 @@ export function StockMapPreview() {
     <Card className="w-full max-w-4xl mx-auto bg-white/90 dark:bg-gray-900/90 border-green-200 dark:border-green-800 shadow-lg overflow-hidden">
       <CardContent className="p-0">
         <div className="relative w-full aspect-[16/9] bg-green-50 dark:bg-green-950 overflow-hidden">
+          {/* 한국 지도 배경 */}
+          <div className="absolute inset-0 bg-[url('/korea-map.svg')] bg-contain bg-center bg-no-repeat opacity-100 dark:opacity-80"></div>
+
+          {/* 지역 구분선 */}
           <svg className="absolute inset-0 w-full h-full stroke-green-300 dark:stroke-green-700 fill-none">
             <path
               d="M 30 40 C 50 20, 70 25, 90 30"
@@ -151,6 +155,16 @@ export function StockMapPreview() {
             />
           </svg>
 
+          {/* 지역 마커들 */}
+          {regions.map((region, index) => (
+            <div
+              key={region.id}
+              className={`absolute transition-all duration-300 ${
+                activeRegion?.id === region.id ? "z-10" : "z-0"
+              }`}
+              style={{ left: `${region.x}%`, top: `${region.y}%` }}
+            >
+              {/* 마커 핀 */}
               <div
                 className={`relative flex items-center justify-center transition-all duration-300 cursor-pointer ${
                   activeRegion?.id === region.id || pulseIndex === index
@@ -171,6 +185,15 @@ export function StockMapPreview() {
                   {region.topStocks[0].emoji}
                 </span>
 
+                {/* 펄스 효과 */}
+                {(activeRegion?.id === region.id || pulseIndex === index) && (
+                  <div className="absolute inset-0 rounded-full animate-ping bg-green-400/30 dark:bg-green-500/30"></div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* 중앙에 표시되는 지역 정보 카드 */}
           {activeRegion && (
             <div
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-lg bg-white dark:bg-gray-800 shadow-xl border border-gray-200 dark:border-gray-700 transform transition-all duration-300 z-50"

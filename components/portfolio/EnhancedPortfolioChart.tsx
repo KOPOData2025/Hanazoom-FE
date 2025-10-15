@@ -36,27 +36,27 @@ interface EnhancedPortfolioChartProps {
   portfolioStocks: any[];
 }
 
-
+// Okabe-Ito 색상 팔레트 (색각이상 친화적)
 const OKABE_ITO_PALETTE = [
-  "#E69F00", 
-  "#56B4E9", 
-  "#009E73", 
-  "#F0E442", 
-  "#0072B2", 
-  "#D55E00", 
-  "#CC79A7", 
-  "#999999", 
+  "#E69F00", // 주황색
+  "#56B4E9", // 하늘색
+  "#009E73", // 녹색
+  "#F0E442", // 노란색
+  "#0072B2", // 파란색
+  "#D55E00", // 주황빨강
+  "#CC79A7", // 분홍색
+  "#999999", // 회색 (알 수 없음용)
 ];
 
-
+// 다크모드 대비를 위한 색상 보정 함수
 const adjustColorForDarkMode = (color: string, brightness: number = 15, saturation: number = 10) => {
-
+  // 간단한 색상 보정 (실제로는 더 정교한 색상 변환 필요)
   const hex = color.replace('#', '');
   const r = parseInt(hex.substr(0, 2), 16);
   const g = parseInt(hex.substr(2, 2), 16);
   const b = parseInt(hex.substr(4, 2), 16);
   
-
+  // HSL 변환 및 보정
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   let h, s, l = (max + min) / 2;
@@ -74,11 +74,11 @@ const adjustColorForDarkMode = (color: string, brightness: number = 15, saturati
     h /= 6;
   }
   
-
+  // 명도와 채도 보정
   l = Math.min(1, l + brightness / 100);
   s = Math.min(1, s + saturation / 100);
   
-
+  // RGB로 다시 변환
   const hue2rgb = (p: number, q: number, t: number) => {
     if (t < 0) t += 1;
     if (t > 1) t -= 1;
@@ -101,9 +101,9 @@ const adjustColorForDarkMode = (color: string, brightness: number = 15, saturati
   }
 };
 
-
+// 색상 간 차이 계산 (ΔE)
 const calculateColorDifference = (color1: string, color2: string) => {
-
+  // 간단한 유클리드 거리 계산 (실제로는 더 정교한 ΔE 계산 필요)
   const hex1 = color1.replace('#', '');
   const hex2 = color2.replace('#', '');
   
@@ -118,7 +118,7 @@ const calculateColorDifference = (color1: string, color2: string) => {
   return Math.sqrt(Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2));
 };
 
-
+// 색상 할당 함수
 const assignColors = (data: Omit<ChartData, 'color' | 'isVisible'>[]) => {
   const assignedColors = new Map<string, string>();
   const usedColors: string[] = [];
@@ -126,15 +126,15 @@ const assignColors = (data: Omit<ChartData, 'color' | 'isVisible'>[]) => {
   return data.map((item, index) => {
     let color: string;
     
-
+    // 이미 할당된 색상이 있으면 재사용
     if (assignedColors.has(item.name)) {
       color = assignedColors.get(item.name)!;
     } else {
-
+      // 새로운 색상 할당
       let colorIndex = index % OKABE_ITO_PALETTE.length;
       color = OKABE_ITO_PALETTE[colorIndex];
       
-
+      // 인접 색상과의 차이가 충분한지 확인
       while (usedColors.some(usedColor => calculateColorDifference(color, usedColor) < 20)) {
         colorIndex = (colorIndex + 1) % OKABE_ITO_PALETTE.length;
         color = OKABE_ITO_PALETTE[colorIndex];
@@ -144,7 +144,7 @@ const assignColors = (data: Omit<ChartData, 'color' | 'isVisible'>[]) => {
       usedColors.push(color);
     }
     
-
+    // 다크모드 보정을 적용하지 않고 원본 색상 사용
     const finalColor = color;
     console.log(`🎨 색상 할당: ${item.name} -> ${finalColor}`);
     
@@ -173,7 +173,7 @@ export default function EnhancedPortfolioChart({
   const generateChartData = () => {
     const data: Omit<ChartData, 'color' | 'isVisible'>[] = [];
 
-
+    // 현금 비율 추가
     if (portfolioSummary.totalCash > 0) {
       data.push({
         name: "현금",
@@ -185,7 +185,7 @@ export default function EnhancedPortfolioChart({
       });
     }
 
-
+    // 주식 종목별 비율 추가
     portfolioStocks.forEach((stock) => {
       if (stock.currentValue > 0) {
         const percentage = Number(
@@ -206,19 +206,19 @@ export default function EnhancedPortfolioChart({
       }
     });
 
-
+    // 색상 할당
     const dataWithColors = assignColors(data);
-    console.log("🎨 차트 데이터 생성:", dataWithColors); 
+    console.log("🎨 차트 데이터 생성:", dataWithColors); // 디버깅용 로그
     setChartData(dataWithColors);
   };
 
-
+  // 정렬된 차트 데이터 (비율 내림차순)
   const sortedChartData = useMemo(() => {
     return [...chartData]
       .sort((a, b) => b.percentage - a.percentage);
   }, [chartData]);
 
-
+  // 항목 호버 함수
   const handleItemHover = (index: number) => {
     setHoveredIndex(index);
     setActiveIndex(index);
@@ -229,7 +229,7 @@ export default function EnhancedPortfolioChart({
     setActiveIndex(null);
   };
 
-
+  // 기하학적으로 안정적인 activeShape 컴포넌트
   const renderActiveShape = (props: any) => {
     const {
       cx,
@@ -244,6 +244,22 @@ export default function EnhancedPortfolioChart({
 
     return (
       <g>
+        {/* 기본 슬라이스 - 원래 색상 그대로 */}
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          stroke="none"
+          style={{
+            shapeRendering: 'geometricPrecision'
+          }}
+        />
+        
+        {/* 내부 빛나는 오버레이 - 전체 슬라이스 덧칠 */}
         <Sector
           cx={cx}
           cy={cy}
@@ -259,6 +275,26 @@ export default function EnhancedPortfolioChart({
           }}
         />
         
+        {/* 두꺼운 흰색 테두리 - 외곽 (outerRadius) */}
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={outerRadius - 3}
+          outerRadius={outerRadius + 2}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill="none"
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth={6}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            shapeRendering: 'geometricPrecision',
+            filter: 'drop-shadow(0px 0px 4px rgba(255,255,255,0.8))'
+          }}
+        />
+        
+        {/* 두꺼운 흰색 테두리 - 내곽 (innerRadius) */}
         <Sector
           cx={cx}
           cy={cy}
@@ -277,10 +313,147 @@ export default function EnhancedPortfolioChart({
           }}
         />
         
+        {/* 두꺼운 흰색 테두리 - 양쪽 측면 (startAngle, endAngle) */}
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
+          startAngle={startAngle - 0.5}
+          endAngle={startAngle + 0.5}
+          fill="none"
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth={4}
+          strokeLinecap="round"
+          style={{
+            shapeRendering: 'geometricPrecision',
+            filter: 'drop-shadow(0px 0px 3px rgba(255,255,255,0.8))'
+          }}
+        />
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
+          startAngle={endAngle - 0.5}
+          endAngle={endAngle + 0.5}
+          fill="none"
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth={4}
+          strokeLinecap="round"
+          style={{
+            shapeRendering: 'geometricPrecision',
+            filter: 'drop-shadow(0px 0px 3px rgba(255,255,255,0.8))'
+          }}
+        />
+      </g>
+    );
+  };
+
+  // 커스텀 툴팁
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl">
+          <div className="flex items-center gap-2 mb-2">
+            {data.type === "cash" && <DollarSign className="w-4 h-4 text-green-500" />}
+            {data.type === "stock" && <TrendingUp className="w-4 h-4 text-blue-500" />}
+            {data.type === "unknown" && <HelpCircle className="w-4 h-4 text-gray-500" />}
+            <p className="font-semibold text-gray-900 dark:text-gray-100">
+              {data.name}
+            </p>
+          </div>
+          {data.stockSymbol && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              종목코드: {data.stockSymbol}
+            </p>
+          )}
+          <div className="space-y-1 text-sm">
+            <p className="text-gray-600 dark:text-gray-400">
+              비중: <span className="font-medium">{data.percentage}%</span>
+            </p>
+            <p className="text-gray-600 dark:text-gray-400">
+              금액: <span className="font-medium">{data.value.toLocaleString()}원</span>
+            </p>
+            {data.type === "stock" && data.profitLoss !== undefined && (
+              <>
+                <p className={`font-medium ${
+                  data.profitLoss >= 0 ? "text-red-600 dark:text-red-400" : "text-blue-600 dark:text-blue-400"
+                }`}>
+                  손익: {data.profitLoss >= 0 ? "+" : ""}{data.profitLoss.toLocaleString()}원
+                </p>
+                <p className={`font-medium ${
+                  data.profitLossRate >= 0 ? "text-red-600 dark:text-red-400" : "text-blue-600 dark:text-blue-400"
+                }`}>
+                  수익률: {data.profitLossRate >= 0 ? "+" : ""}{data.profitLossRate?.toFixed(2)}%
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // 단일 데이터 처리
+  if (sortedChartData.length === 1) {
+    return (
+      <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800">
+        <CardHeader>
+          <CardTitle className="text-xl text-green-900 dark:text-green-100 flex items-center gap-2">
+            <PieChartIcon className="w-5 h-5" />
+            자산 배분 현황
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-80">
+            <div className="text-center">
+              <div 
+                className="w-32 h-32 rounded-full mx-auto mb-4 flex items-center justify-center"
+                style={{ 
+                  backgroundColor: sortedChartData[0].color,
+                  border: '3px solid rgba(255,255,255,0.2)'
+                }}
+              >
+                <div className="text-white font-bold text-lg">
+                  {sortedChartData[0].percentage}%
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                {sortedChartData[0].name}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                {sortedChartData[0].value.toLocaleString()}원
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-green-200 dark:border-green-800">
+      <CardHeader>
+        <CardTitle className="text-xl text-green-900 dark:text-green-100 flex items-center gap-2">
+          <PieChartIcon className="w-5 h-5" />
+          자산 배분 현황
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* 도넛 차트 */}
           <div className="h-80 relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <defs>
+                  {/* 하칭 패턴 정의 */}
+                  <pattern id="hatchPattern" patternUnits="userSpaceOnUse" width="4" height="4">
+                    <path d="M 0,4 l 4,-4 M -1,1 l 2,-2 M 3,5 l 2,-2" stroke="rgba(255,255,255,0.3)" strokeWidth="0.5"/>
+                  </pattern>
+                  {/* 클리핑 패스 정의 */}
                   <clipPath id="donutClip">
                     <rect x="0" y="0" width="100%" height="100%"/>
                   </clipPath>
@@ -302,7 +475,7 @@ export default function EnhancedPortfolioChart({
                   }}
                 >
                   {sortedChartData.map((entry, index) => {
-                    console.log(`🎨 Cell ${index}:`, entry.name, entry.color); 
+                    console.log(`🎨 Cell ${index}:`, entry.name, entry.color); // 디버깅용 로그
                     
                     return (
                       <Cell 
@@ -323,3 +496,84 @@ export default function EnhancedPortfolioChart({
             </ResponsiveContainer>
           </div>
 
+          {/* 범례 및 상세 정보 */}
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              총 자산:{" "}
+              <span className="font-semibold text-green-900 dark:text-green-100">
+                {portfolioSummary.totalBalance?.toLocaleString()}원
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {chartData
+                .sort((a, b) => b.percentage - a.percentage)
+                .map((item, index) => {
+                  // 차트에서 해당 항목의 인덱스 찾기
+                  const chartIndex = sortedChartData.findIndex(chartItem => chartItem.name === item.name);
+                  const isHovered = hoveredIndex === chartIndex;
+                  
+                  return (
+                    <div
+                      key={index}
+                      className={`flex items-center justify-between p-3 rounded-lg transition-all duration-200 cursor-pointer ${
+                        isHovered 
+                          ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-300 dark:border-yellow-600 shadow-lg" 
+                          : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }`}
+                      onMouseEnter={() => handleItemHover(chartIndex)}
+                      onMouseLeave={handleItemLeave}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
+                            item.type === "unknown" ? "bg-gray-400" : ""
+                          } ${isHovered ? "scale-125 ring-2 ring-yellow-400 ring-opacity-50" : ""}`}
+                          style={{ 
+                            backgroundColor: item.color,
+                            backgroundImage: item.type === "unknown" ? "repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,0.3) 2px, rgba(255,255,255,0.3) 4px)" : "none",
+                            boxShadow: isHovered ? "0 0 10px rgba(255, 193, 7, 0.5)" : "none"
+                          }}
+                        />
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-medium transition-colors duration-200 ${
+                              isHovered 
+                                ? "text-yellow-800 dark:text-yellow-200 font-bold" 
+                                : "text-gray-900 dark:text-gray-100"
+                            }`}>
+                              {item.name}
+                            </span>
+                            {item.type === "cash" && <DollarSign className="w-3 h-3 text-green-500" />}
+                            {item.type === "stock" && <TrendingUp className="w-3 h-3 text-blue-500" />}
+                            {item.type === "unknown" && <HelpCircle className="w-3 h-3 text-gray-500" />}
+                          </div>
+                          {item.stockSymbol && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {item.stockSymbol}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`font-semibold transition-colors duration-200 ${
+                          isHovered 
+                            ? "text-yellow-800 dark:text-yellow-200 font-bold" 
+                            : "text-gray-900 dark:text-green-100"
+                        }`}>
+                          {item.percentage}%
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {item.value.toLocaleString()}원
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

@@ -8,7 +8,7 @@ export interface Region {
 }
 
 export const mockRegions: Region[] = [
-
+  // 시/도 (Level 1)
   {
     id: 1,
     name: "서울특별시",
@@ -24,7 +24,7 @@ export const mockRegions: Region[] = [
     longitude: 127.0094,
   },
 
-
+  // 서울특별시 구 (Level 2)
   {
     id: 101,
     name: "강남구",
@@ -50,7 +50,7 @@ export const mockRegions: Region[] = [
     longitude: 126.9015,
   },
 
-
+  // 경기도 시/군 (Level 2)
   {
     id: 201,
     name: "수원시",
@@ -76,7 +76,7 @@ export const mockRegions: Region[] = [
     longitude: 126.832,
   },
 
-
+  // 강남구 동 (Level 3)
   {
     id: 10101,
     name: "역삼동",
@@ -102,7 +102,7 @@ export const mockRegions: Region[] = [
     longitude: 127.0572,
   },
 
-
+  // 종로구 동 (Level 3)
   {
     id: 10201,
     name: "사직동",
@@ -128,7 +128,7 @@ export const mockRegions: Region[] = [
     longitude: 126.9856,
   },
 
-
+  // 수원시 팔달구 동 (Level 3)
   {
     id: 20101,
     name: "인계동",
@@ -146,7 +146,7 @@ export const mockRegions: Region[] = [
     longitude: 127.0145,
   },
 
-
+  // 성남시 분당구 동 (Level 3)
   {
     id: 20201,
     name: "정자동",

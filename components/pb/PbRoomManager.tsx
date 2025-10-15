@@ -83,7 +83,7 @@ export default function PbRoomManager({
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const [loading, setLoading] = useState(true);
 
-
+  // 방 생성 폼 상태
   const [createForm, setCreateForm] = useState({
     roomName: "",
     roomDescription: "",
@@ -91,7 +91,7 @@ export default function PbRoomManager({
     roomPassword: "",
   });
 
-
+  // 방 업데이트 폼 상태
   const [updateForm, setUpdateForm] = useState({
     roomName: "",
     roomDescription: "",
@@ -99,13 +99,13 @@ export default function PbRoomManager({
     roomPassword: "",
   });
 
-
+  // 방 참여 폼 상태
   const [joinForm, setJoinForm] = useState({
     inviteCode: "",
     roomPassword: "",
   });
 
-
+  // 내 방 조회
   const fetchMyRoom = async () => {
     try {
       const response = await fetch("/api/pb-rooms/my-room", {
@@ -128,7 +128,7 @@ export default function PbRoomManager({
     }
   };
 
-
+  // 방 생성
   const createRoom = async () => {
     try {
       setIsCreatingRoom(true);
@@ -161,7 +161,7 @@ export default function PbRoomManager({
     }
   };
 
-
+  // 방 정보 업데이트
   const updateRoom = async () => {
     if (!myRoom) return;
 
@@ -190,7 +190,7 @@ export default function PbRoomManager({
     }
   };
 
-
+  // 초대 코드 재생성
   const regenerateInviteCode = async () => {
     if (!myRoom) return;
 
@@ -217,7 +217,7 @@ export default function PbRoomManager({
     }
   };
 
-
+  // 참여자 강퇴
   const kickParticipant = async (participantId: string) => {
     if (!myRoom) return;
 
@@ -235,7 +235,7 @@ export default function PbRoomManager({
       });
 
       if (response.ok) {
-
+        // 방 정보 새로고침
         fetchMyRoom();
       }
     } catch (error) {
@@ -243,7 +243,7 @@ export default function PbRoomManager({
     }
   };
 
-
+  // 초대 코드 복사
   const copyInviteCode = () => {
     if (myRoom) {
       navigator.clipboard.writeText(myRoom.inviteCode);
@@ -251,12 +251,12 @@ export default function PbRoomManager({
     }
   };
 
-
+  // 초기 로드
   useEffect(() => {
     fetchMyRoom();
   }, []);
 
-
+  // 업데이트 폼 초기화
   useEffect(() => {
     if (myRoom) {
       setUpdateForm({
@@ -372,6 +372,49 @@ export default function PbRoomManager({
 
       {myRoom ? (
         <div className="space-y-4">
+          {/* 방 정보 카드 */}
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-green-200 dark:border-green-800">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-lg text-green-900 dark:text-green-100 flex items-center gap-2">
+                    <Crown className="w-5 h-5 text-yellow-500" />
+                    {myRoom.roomName}
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {myRoom.roomDescription}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Badge
+                    className={
+                      myRoom.isActive
+                        ? "bg-green-100 text-green-800 border-green-200"
+                        : "bg-red-100 text-red-800 border-red-200"
+                    }
+                  >
+                    {myRoom.isActive ? "활성" : "비활성"}
+                  </Badge>
+                  <Badge
+                    className={
+                      myRoom.isPrivate
+                        ? "bg-blue-100 text-blue-800 border-blue-200"
+                        : "bg-gray-100 text-gray-800 border-gray-200"
+                    }
+                  >
+                    {myRoom.isPrivate ? (
+                      <Lock className="w-3 h-3 mr-1" />
+                    ) : (
+                      <Unlock className="w-3 h-3 mr-1" />
+                    )}
+                    {myRoom.isPrivate ? "비공개" : "공개"}
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* 초대 코드 */}
                 <div>
                   <Label className="text-sm font-medium">초대 코드</Label>
                   <div className="flex gap-2 mt-1">
@@ -397,6 +440,62 @@ export default function PbRoomManager({
                   </div>
                 </div>
 
+                {/* 참여자 정보 */}
+                <div>
+                  <Label className="text-sm font-medium">
+                    참여자 ({myRoom.currentParticipants}/
+                    {myRoom.maxParticipants})
+                  </Label>
+                  <div className="mt-2 space-y-2">
+                    {myRoom.participants.map((participant) => (
+                      <div
+                        key={participant.participantId}
+                        className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-gray-500" />
+                          <span className="text-sm font-medium">
+                            {participant.memberName}
+                          </span>
+                          {participant.role === "HOST" && (
+                            <Crown className="w-4 h-4 text-yellow-500" />
+                          )}
+                        </div>
+                        {participant.role === "GUEST" && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                <UserX className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>참여자 강퇴</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {participant.memberName}님을 방에서
+                                  강퇴하시겠습니까?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>취소</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    kickParticipant(participant.participantId)
+                                  }
+                                  className="bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                  강퇴
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 액션 버튼들 */}
                 <div className="flex gap-2">
                   <Dialog
                     open={showUpdateDialog}

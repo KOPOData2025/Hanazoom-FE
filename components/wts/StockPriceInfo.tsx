@@ -23,13 +23,13 @@ export function StockPriceInfo({ stockData, className }: StockPriceInfoProps) {
 
   const getPriceChangeColor = (changeSign: string) => {
     switch (changeSign) {
-      case "1": 
-      case "2": 
+      case "1": // 상한가
+      case "2": // 상승
         return "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950";
-      case "4": 
-      case "5": 
+      case "4": // 하락
+      case "5": // 하한가
         return "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950";
-      default: 
+      default: // 보합
         return "text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800";
     }
   };
@@ -112,6 +112,43 @@ export function StockPriceInfo({ stockData, className }: StockPriceInfoProps) {
       </CardHeader>
 
       <CardContent className="space-y-6 flex flex-col h-full">
+        {/* 현재가 메인 표시 */}
+        <div
+          className={`rounded-xl p-4 ${getPriceChangeColor(
+            stockData.changeSign
+          )}`}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium opacity-80">
+              {stockData?.isAfterMarketClose ? "종가" : "현재가"}
+            </span>
+            <Badge className={getBadgeVariant(stockData?.changeSign)}>
+              {stockData?.changeStatus}
+            </Badge>
+          </div>
+
+          <div className="flex items-end gap-3">
+            <div className="flex items-center gap-2">
+              {getPriceChangeIcon(stockData?.changeSign)}
+              <span className="text-3xl font-bold">
+                {formatNumber(stockData?.currentPrice)}원
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 mt-2">
+            <span className="text-lg font-semibold">
+              {getChangePrefix(stockData?.changeSign)}
+              {formatNumber(stockData?.changePrice)}원
+            </span>
+            <span className="text-lg font-semibold">
+              ({getChangePrefix(stockData?.changeSign)}
+              {stockData?.changeRate}%)
+            </span>
+          </div>
+        </div>
+
+        {/* 상세 정보 */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -150,6 +187,30 @@ export function StockPriceInfo({ stockData, className }: StockPriceInfoProps) {
           </div>
         </div>
 
+        {/* 거래량 & 시총 */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <div className="grid grid-cols-1 gap-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                거래량
+              </span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {formatNumber(stockData.volume)}주
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                시가총액
+              </span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {formatNumber(stockData.marketCap)}억
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 업데이트 시간 */}
         <div className="flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4 mt-auto">
           <Clock className="w-3 h-3" />
           <span>자동 업데이트 (5초마다)</span>

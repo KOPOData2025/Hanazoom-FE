@@ -37,7 +37,7 @@ export default function OrdersPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
 
-
+  // 주문 목록 조회
   const fetchOrders = async (page: number = 0) => {
     if (!accessToken) return;
 
@@ -54,7 +54,7 @@ export default function OrdersPage() {
     }
   };
 
-
+  // 미체결 주문 조회
   const fetchPendingOrders = async () => {
     if (!accessToken) return;
 
@@ -67,7 +67,7 @@ export default function OrdersPage() {
     }
   };
 
-
+  // 주문 취소
   const handleCancelOrder = async (orderId: number) => {
     if (!accessToken) return;
 
@@ -75,7 +75,7 @@ export default function OrdersPage() {
       await cancelOrder(orderId);
       toast.success("주문이 취소되었습니다.");
       
-
+      // 목록 새로고침
       if (activeTab === "all") {
         fetchOrders(currentPage);
       } else {
@@ -87,7 +87,7 @@ export default function OrdersPage() {
     }
   };
 
-
+  // 새로고침
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
@@ -104,7 +104,7 @@ export default function OrdersPage() {
     }
   };
 
-
+  // 초기 데이터 로드
   useEffect(() => {
     if (accessToken) {
       fetchOrders();
@@ -112,14 +112,14 @@ export default function OrdersPage() {
     }
   }, [accessToken]);
 
-
+  // 탭 변경 시 데이터 로드
   useEffect(() => {
     if (activeTab === "pending" && accessToken) {
       fetchPendingOrders();
     }
   }, [activeTab, accessToken]);
 
-
+  // 로그인 상태 확인
   if (!accessToken) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950">
@@ -146,7 +146,7 @@ export default function OrdersPage() {
     );
   }
 
-
+  // 주문 상태에 따른 아이콘과 색상
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "PENDING":
@@ -181,7 +181,7 @@ export default function OrdersPage() {
     }
   };
 
-
+  // 주문 카드 컴포넌트
   const OrderCard = ({ order }: { order: OrderResponse }) => (
     <Card className="hover:shadow-md transition-shadow relative z-10">
       <CardContent className="p-4">
@@ -265,6 +265,20 @@ export default function OrdersPage() {
       <MouseFollower />
       
       
+      {/* 배경 패턴 */}
+      <div className="absolute inset-0 pointer-events-none opacity-10 dark:opacity-5">
+        <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:20px_20px]"></div>
+      </div>
+
+      <NavBar />
+      
+      <div className="fixed top-16 left-0 right-0 z-[60]">
+        <StockTicker />
+      </div>
+
+      <main className="pt-28 pb-8 relative z-10">
+        <div className="container mx-auto px-4">
+          {/* 헤더 */}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-green-800 dark:text-green-200">
@@ -289,6 +303,18 @@ export default function OrdersPage() {
             </Button>
           </div>
 
+          {/* 탭 */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-green-200 dark:border-green-700 shadow-lg">
+              <TabsTrigger value="all" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+                전체 주문
+              </TabsTrigger>
+              <TabsTrigger value="pending" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+                미체결 주문
+              </TabsTrigger>
+            </TabsList>
+
+            {/* 전체 주문 탭 */}
             <TabsContent value="all" className="mt-6">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
@@ -301,6 +327,43 @@ export default function OrdersPage() {
                     <OrderCard key={order.id} order={order} />
                   ))}
                   
+                  {/* 페이지네이션 */}
+                  {orders.totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 mt-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => fetchOrders(currentPage - 1)}
+                        disabled={currentPage === 0}
+                      >
+                        이전
+                      </Button>
+                      <span className="px-4 py-2 text-sm">
+                        {currentPage + 1} / {orders.totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        onClick={() => fetchOrders(currentPage + 1)}
+                        disabled={currentPage === orders.totalPages - 1}
+                      >
+                        다음
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                    주문 내역이 없습니다
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    아직 주문한 내역이 없습니다.
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* 미체결 주문 탭 */}
             <TabsContent value="pending" className="mt-6">
               {pendingOrders.length > 0 ? (
                 <div className="space-y-4">

@@ -21,16 +21,16 @@ export default function VerifyPage() {
   }, [searchParams]);
 
   const isSocialKakao = useMemo(() => {
-
+    // 현재 스토어에 소셜 구분 값이 없으므로 임시 휴리스틱 사용
     return !!user?.email?.includes("kakao");
   }, [user]);
 
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-
+  // 로그인 페이지와 완전히 동일한 에러 알림 함수
   const showErrorAlert = (message: string) => {
-
+    // 현재 다크모드 상태 확인
     const isDarkMode = document.documentElement.classList.contains("dark");
 
     Swal.fire({
@@ -51,7 +51,7 @@ export default function VerifyPage() {
   };
 
   useEffect(() => {
-
+    // 사용자 정보가 없으면 로그인으로 이동
     if (!user) {
       router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
     }
@@ -63,16 +63,16 @@ export default function VerifyPage() {
       "f50a1c0f8638ca30ef8c170a6ff8412b";
     const redirectUri = encodeURIComponent(
       process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI ||
-        "http:
+        "http://localhost:3000/auth/kakao/callback"
     );
-
+    // step-up 정보를 state에 담아 왕복
     const state = encodeURIComponent(
       JSON.stringify({ stepUp: true, redirect })
     );
     const scope = "profile_nickname";
-
+    // 재인증 강제: prompt=login, max_age=0 추가
     const kakaoAuthUrl =
-      `https:
+      `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoClientId}` +
       `&redirect_uri=${redirectUri}` +
       `&response_type=code&scope=${scope}` +
       `&state=${state}` +
@@ -84,7 +84,7 @@ export default function VerifyPage() {
   const submitPassword = async () => {
     if (!user?.email) return;
     
-
+    // 비밀번호 유효성 검사
     if (!password.trim()) {
       showErrorAlert("비밀번호를 입력해주세요.");
       return;
@@ -119,15 +119,15 @@ export default function VerifyPage() {
         longitude: data.longitude,
       });
 
-
+      // 최근 검증 시각(10분 유효) 기록
       try {
         sessionStorage.setItem("recentlyVerifiedAt", Date.now().toString());
       } catch {}
 
-
+      // 검증 성공 -> 원래 위치로
       router.replace(redirect);
     } catch (err) {
-
+      // 실패 시 로그인 페이지와 동일한 에러 알림 사용
       showErrorAlert("비밀번호가 올바르지 않습니다.");
     } finally {
       setSubmitting(false);

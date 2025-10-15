@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 export async function POST() {
   try {
-
+    // refreshToken 쿠키 제거 - Next.js 15에서는 await 필요
     const cookieStore = await cookies();
     cookieStore.delete("refreshToken");
 

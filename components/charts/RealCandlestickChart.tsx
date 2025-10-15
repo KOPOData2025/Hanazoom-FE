@@ -37,7 +37,7 @@ export function RealCandlestickChart({
     refreshData,
   } = useChartData(stockSymbol);
 
-
+  // 캔들스틱 데이터 포맷팅
   const formatCandlestickData = (data: ChartDataDto[]) => {
     return data.map((item) => {
       const open = item.openPrice;
@@ -45,10 +45,10 @@ export function RealCandlestickChart({
       const high = item.highPrice;
       const low = item.lowPrice;
 
-
+      // 캔들스틱 색상 결정 (시가 > 종가: 빨강, 시가 < 종가: 파랑)
       const isPositive = close >= open;
 
-
+      // 캔들스틱 높이와 위치 계산
       const bodyHeight = Math.abs(close - open);
 
       return {
@@ -63,10 +63,10 @@ export function RealCandlestickChart({
         volume: item.volume,
         change: item.priceChange,
         changePercent: item.priceChangePercent,
-
+        // 캔들스틱 렌더링을 위한 값들
         bodyHeight,
         isPositive,
-
+        // 고가-저가 선을 위한 값
         highLowHeight: high - low,
       };
     });
@@ -134,6 +134,16 @@ export function RealCandlestickChart({
           />
         </div>
 
+        {/* 요약 정보 */}
+        {chartData.length > 0 && (
+          <ChartSummary data={chartData} className="mb-4" />
+        )}
+      </CardHeader>
+
+      <CardContent>
+        {chartData.length > 0 ? (
+          <div className="space-y-4">
+            {/* 캔들스틱 차트 */}
             <div className="h-64">
               <ChartContainer
                 config={{
@@ -167,6 +177,16 @@ export function RealCandlestickChart({
                       ]}
                     />
 
+                    {/* 고가-저가 선 (wick) */}
+                    <Bar
+                      dataKey="highLowHeight"
+                      fill="transparent"
+                      stroke="#6b7280"
+                      strokeWidth={1}
+                      name="고가-저가"
+                    />
+
+                    {/* 캔들스틱 몸통 */}
                     <Bar dataKey="bodyHeight" fill="#cccccc" name="시가-종가">
                       {formattedData.map((entry, index) => (
                         <Cell
@@ -180,3 +200,47 @@ export function RealCandlestickChart({
               </ChartContainer>
             </div>
 
+            {/* 거래량 차트 */}
+            <div className="h-32">
+              <ChartContainer
+                config={{
+                  volume: { color: "#10b981" },
+                }}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={formattedData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="date" stroke="#6b7280" fontSize={10} />
+                    <YAxis
+                      stroke="#6b7280"
+                      fontSize={10}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+                    />
+                    <Tooltip
+                      content={<ChartTooltipContent />}
+                      formatter={(value: number) => [
+                        `${value.toLocaleString()}주`,
+                        "거래량",
+                      ]}
+                    />
+                    <Bar
+                      dataKey="volume"
+                      fill="#10b981"
+                      fillOpacity={0.7}
+                      name="거래량"
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          </div>
+        ) : (
+          <ChartDataStatus
+            period={selectedPeriod}
+            dataCount={chartData.length}
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+}

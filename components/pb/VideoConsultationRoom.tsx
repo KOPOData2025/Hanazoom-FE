@@ -29,7 +29,7 @@ interface VideoConsultationRoomProps {
   clientName: string;
   clientRegion: string;
   pbName: string;
-  clientId?: string; 
+  clientId?: string; // 클라이언트 ID 추가
   onEndConsultation: () => void;
 }
 
@@ -41,7 +41,7 @@ export default function VideoConsultationRoom({
   clientId,
   onEndConsultation,
 }: VideoConsultationRoomProps) {
-
+  // 클라이언트 ID가 제공되지 않으면 공유 클라이언트 ID 생성
   const actualClientId =
     clientId ||
     (typeof window !== "undefined"
@@ -103,13 +103,13 @@ export default function VideoConsultationRoom({
     },
   });
 
-
+  // 컴포넌트 마운트 시 연결 시작
   useEffect(() => {
     console.log("🎥 VideoConsultationRoom 마운트 - 연결 시작");
     startConnection();
   }, [startConnection]);
 
-
+  // 비디오 토글
   const toggleVideo = () => {
     if (localVideoRef.current?.srcObject) {
       const stream = localVideoRef.current.srcObject as MediaStream;
@@ -121,7 +121,7 @@ export default function VideoConsultationRoom({
     }
   };
 
-
+  // 오디오 토글
   const toggleAudio = () => {
     if (localVideoRef.current?.srcObject) {
       const stream = localVideoRef.current.srcObject as MediaStream;
@@ -133,7 +133,7 @@ export default function VideoConsultationRoom({
     }
   };
 
-
+  // 전체화면 토글
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -144,23 +144,23 @@ export default function VideoConsultationRoom({
     }
   };
 
-
+  // 상담 종료
   const handleEndConsultation = () => {
     endConnection();
     onEndConsultation();
   };
 
-
+  // 채팅 메시지 전송
   const handleSendMessage = () => {
     if (newMessage.trim() && isConnected) {
-
+      // WebSocket을 통해 메시지 전송
       const messageData = {
         userName: pbName,
         message: newMessage.trim(),
       };
 
-
-
+      // WebRTC 훅에서 메시지 전송 기능을 사용할 수 있도록 확장 필요
+      // 임시로 로컬 상태에 추가
       const newChatMessage = {
         id: Date.now().toString(),
         sender: pbName,
@@ -173,7 +173,7 @@ export default function VideoConsultationRoom({
     }
   };
 
-
+  // Enter 키로 메시지 전송
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -181,7 +181,7 @@ export default function VideoConsultationRoom({
     }
   };
 
-
+  // 연결 상태에 따른 배지 색상
   const getConnectionBadgeColor = (state: string) => {
     switch (state) {
       case "connected":
@@ -195,7 +195,7 @@ export default function VideoConsultationRoom({
     }
   };
 
-
+  // 연결 상태 텍스트
   const getConnectionStateText = (state: string) => {
     switch (state) {
       case "connected":
@@ -211,10 +211,73 @@ export default function VideoConsultationRoom({
 
   return (
     <div className="h-full flex flex-col">
+      {/* 메인 비디오 영역 */}
+      <div className="flex-1 relative bg-gray-900 rounded-lg m-2 md:m-4 overflow-hidden">
+        {mediaMode === "text" ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="text-center text-white max-w-md mx-auto px-4">
+              <div className="text-6xl mb-4">💬</div>
+              <h3 className="text-xl font-semibold mb-2">텍스트 채팅 모드</h3>
+              <p className="text-gray-300 mb-4">
+                카메라나 마이크가 없어도 텍스트로 상담을 진행할 수 있습니다
+              </p>
+              <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3 mb-4">
+                <p className="text-sm text-blue-200">
+                  💡 화상 상담을 원하시면 카메라/마이크를 연결하고 권한을 허용해주세요
+                </p>
+              </div>
+              <Button
+                onClick={async () => {
+                  const success = await requestPermissions();
+                  if (success) {
+                    await startConnection();
+                  } else {
+                    setShowPermissionGuide(true);
+                  }
+                }}
+                size="sm"
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                카메라/마이크 연결 시도
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        )}
+
+        {/* 원격 비디오 오버레이 */}
         <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
           {clientName}
         </div>
 
+        {/* 연결 상태 오버레이 */}
+        {!isConnected && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80">
+            <div className="text-center text-white">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+              <p className="text-lg font-medium">
+                {connectionState === "connecting"
+                  ? "연결 중..."
+                  : connectionState === "offline"
+                  ? "오프라인 모드"
+                  : "연결 대기 중"}
+              </p>
+              <p className="text-sm opacity-75">
+                {connectionState === "offline"
+                  ? "로컬 비디오만 확인 가능합니다"
+                  : "잠시만 기다려주세요"}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 로컬 비디오 */}
         <div className="absolute bottom-2 right-2 md:bottom-4 md:right-4 w-24 h-18 md:w-48 md:h-36 bg-gray-900 rounded-lg overflow-hidden border-2 border-green-500">
           {mediaMode === "text" ? (
             <div className="w-full h-full flex items-center justify-center">
@@ -233,6 +296,12 @@ export default function VideoConsultationRoom({
             />
           )}
 
+          {/* 로컬 비디오 오버레이 */}
+          <div className="absolute top-1 left-1 md:top-2 md:left-2 bg-black/50 text-white px-1 py-0.5 md:px-2 md:py-1 rounded text-xs">
+            {pbName}
+          </div>
+
+          {/* 비디오/오디오 상태 표시 */}
           <div className="absolute bottom-1 right-1 md:bottom-2 md:right-2 flex gap-1">
             {!isVideoEnabled && (
               <div className="bg-red-500 text-white p-0.5 md:p-1 rounded">
@@ -248,6 +317,11 @@ export default function VideoConsultationRoom({
         </div>
       </div>
 
+      {/* 하단 컨트롤 바 */}
+      <div className="absolute bottom-2 md:bottom-4 left-1/2 transform -translate-x-1/2">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-full p-2 md:p-4 shadow-xl border border-emerald-200/30 dark:border-emerald-700/30">
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* 비디오 토글 - 텍스트 모드에서는 비활성화 */}
             {mediaMode !== "text" && (
               <button
                 onClick={toggleVideo}
@@ -265,6 +339,25 @@ export default function VideoConsultationRoom({
               </button>
             )}
 
+            {/* 오디오 토글 - 텍스트 모드에서는 비활성화 */}
+            {mediaMode !== "text" && (
+              <button
+                onClick={toggleAudio}
+                className={`rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center transition-all duration-200 ${
+                  isAudioEnabled
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg"
+                    : "bg-red-500 hover:bg-red-600 text-white shadow-lg"
+                }`}
+              >
+                {isAudioEnabled ? (
+                  <Mic className="w-4 h-4 md:w-5 md:h-5" />
+                ) : (
+                  <MicOff className="w-4 h-4 md:w-5 md:h-5" />
+                )}
+              </button>
+            )}
+
+            {/* 텍스트 모드 표시 */}
             {mediaMode === "text" && (
               <div className="flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full border border-emerald-200 dark:border-emerald-700">
                 <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -274,6 +367,18 @@ export default function VideoConsultationRoom({
               </div>
             )}
 
+            {/* 통화 시작 */}
+            {!isConnected && (
+              <button
+                onClick={initiateCall}
+                disabled={isConnecting}
+                className="rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white shadow-lg transition-all duration-200"
+              >
+                <Phone className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+            )}
+
+            {/* 상담 종료 */}
             <button
               onClick={handleEndConsultation}
               className="rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all duration-200"
@@ -284,6 +389,29 @@ export default function VideoConsultationRoom({
         </div>
       </div>
 
+      {/* 오류 메시지 */}
+      {error && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+              <span className="font-medium">연결 오류</span>
+            </div>
+            <p className="text-sm mt-1">{error}</p>
+            {error.includes("권한") && (
+              <Button
+                onClick={() => setShowPermissionGuide(true)}
+                className="mt-2 text-xs"
+                size="sm"
+              >
+                권한 설정 가이드 보기
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 권한 가이드 모달 */}
       {showPermissionGuide && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
@@ -361,7 +489,7 @@ export default function VideoConsultationRoom({
               <Button
                 onClick={() => {
                   setShowPermissionGuide(false);
-
+                  // 텍스트 채팅 모드로 강제 진행
                   setMediaMode("text");
                   startConnection();
                 }}

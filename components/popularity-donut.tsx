@@ -13,9 +13,9 @@ type Props = {
   onLoaded?: (d: PopularityDetailsResponse | null) => void;
 };
 
-
+// 전역 캐시를 위한 Map
 const dataCache = new Map<string, { data: PopularityDetailsResponse | null; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; 
+const CACHE_DURATION = 5 * 60 * 1000; // 5분
 
 function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
   const mountedRef = useRef<boolean>(true);
   const onLoadedRef = useRef(onLoaded);
   
-
+  // onLoaded 콜백을 ref로 안정화
   useEffect(() => {
     onLoadedRef.current = onLoaded;
   }, [onLoaded]);
@@ -36,7 +36,7 @@ function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
     mountedRef.current = true;
     const key = `${regionId}:${symbol}`;
     
-
+    // 캐시에서 데이터 확인
     const cached = dataCache.get(key);
     const now = Date.now();
     
@@ -49,7 +49,7 @@ function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
       };
     }
 
-
+    // 이미 같은 키로 요청 중이라면 재요청하지 않음
     if (keyRef.current === key) {
       return () => {
         mountedRef.current = false;
@@ -69,7 +69,7 @@ function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
 
     getPopularityDetails(regionId, symbol, "latest")
       .then((d) => {
-
+        // 캐시에 저장
         dataCache.set(key, { data: d, timestamp: now });
         
         setData(d);
@@ -77,7 +77,7 @@ function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
         onLoadedRef.current?.(d);
       })
       .catch((err) => {
-
+        // 실패한 경우도 캐시에 저장 (짧은 시간 동안 재요청 방지)
         dataCache.set(key, { data: null, timestamp: now });
         
         setData(null);
@@ -86,7 +86,7 @@ function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
       })
       .finally(() => {
         clearTimeout(timeoutId);
-        keyRef.current = ""; 
+        keyRef.current = ""; // 요청 완료 후 키 초기화
       });
 
     return () => {
@@ -108,7 +108,7 @@ function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
     return <div className="text-sm text-gray-500">데이터 없음</div>;
   }
 
-
+  // 뉴스는 숨김
   const items = [
     { key: "Trade", label: "거래추세", value: Number(data.tradeTrend) || 0, weight: Number(data.weightTradeTrend) || 0, color: "#059669" },
     { key: "Comm", label: "커뮤니티", value: Number(data.community) || 0, weight: Number(data.weightCommunity) || 0, color: "#dc2626" },
@@ -121,6 +121,17 @@ function PopularityDonutBase({ regionId, symbol, name, onLoaded }: Props) {
 
   return (
     <div className="space-y-4">
+      {/* 종목명과 인기도 점수 */}
+      <div className="text-center">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          {name || symbol}
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          인기도 점수: {data.score?.toFixed(1) || 0}
+        </p>
+      </div>
+
+      {/* 도넛차트 */}
       <ChartContainer
         config={{
           거래추세: { label: "거래추세", color: "#059669" },

@@ -8,7 +8,7 @@ export interface ChartDataDto {
   volume: number;
   priceChange: number;
   priceChangePercent: number;
-
+  // 추가된 속성들
   timestamp?: string;
   open?: string;
   high?: string;
@@ -19,7 +19,7 @@ export interface ChartDataDto {
   isComplete?: boolean;
 }
 
-
+// 백엔드 CandleData와 일치하는 타입
 export interface CandleData {
   stockCode: string;
   dateTime: string;

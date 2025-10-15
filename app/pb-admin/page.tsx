@@ -19,13 +19,13 @@ export default function PBAdminPage() {
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [userName, setUserName] = useState<string>("PB");
 
-
+  // 실제로는 인증된 사용자의 PB ID를 가져와야 함
   useEffect(() => {
     const currentUserId = getCurrentUserId();
     console.log("🔍 현재 사용자 ID:", currentUserId);
     console.log("🔍 JWT 토큰:", accessToken ? "존재함" : "없음");
 
-
+    // UUID 형식 검증
     const uuidPattern =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -33,7 +33,7 @@ export default function PBAdminPage() {
       console.log("✅ 유효한 UUID 사용자 ID:", currentUserId);
       setPbId(currentUserId);
     } else {
-
+      // UUID가 아닌 경우 강제로 유효한 UUID 사용
       const validUuid = "550e8400-e29b-41d4-a716-446655440000";
       console.warn("⚠️ UUID가 아닌 사용자 ID입니다:", currentUserId);
       console.warn("🔧 유효한 UUID로 강제 변경:", validUuid);
@@ -41,7 +41,7 @@ export default function PBAdminPage() {
     }
   }, [getCurrentUserId, accessToken]);
 
-
+  // 사용자 정보 가져오기
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (accessToken) {
@@ -51,7 +51,7 @@ export default function PBAdminPage() {
           console.log("✅ 사용자 정보 가져오기 성공:", userInfo.name);
         } catch (error) {
           console.error("❌ 사용자 정보 가져오기 실패:", error);
-          setUserName("PB"); 
+          setUserName("PB"); // 기본값으로 설정
         }
       }
     };
@@ -65,7 +65,7 @@ export default function PBAdminPage() {
     console.log("🔍 현재 accessToken:", accessToken ? "존재함" : "없음");
 
     try {
-
+      // 새로운 WebRTC 시스템으로 화상상담 시작
       console.log("🆕 화상상담 방 생성 중...");
       const response = await fetch("/api/pb-rooms/start", {
         method: "POST",
@@ -83,7 +83,7 @@ export default function PBAdminPage() {
           console.log("화상상담 방 생성 성공:", roomId);
           console.log("초대 URL:", inviteUrl);
 
-
+          // 고객용 초대 URL 생성 (기존 page.tsx 사용)
           const customerInviteUrl = `${
             window.location.origin
           }/pb/room/${roomId}?type=pb-room&pbName=${encodeURIComponent(
@@ -91,16 +91,16 @@ export default function PBAdminPage() {
           )}&userType=guest`;
           setInviteUrl(customerInviteUrl);
 
-
+          // 클립보드에 초대 URL 복사
           try {
             await navigator.clipboard.writeText(customerInviteUrl);
             setIsCopied(true);
-            setTimeout(() => setIsCopied(false), 3000); 
+            setTimeout(() => setIsCopied(false), 3000); // 3초 후 복사 상태 초기화
           } catch (clipboardError) {
             console.error("클립보드 복사 실패:", clipboardError);
           }
 
-
+          // 화상상담방으로 이동 (기존 page.tsx 사용)
           router.push(
             `/pb/room/${roomId}?type=pb-room&pbName=${encodeURIComponent(
               userName
@@ -126,10 +126,27 @@ export default function PBAdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950 dark:to-emerald-950 overflow-hidden relative transition-colors duration-500">
+      {/* 배경 패턴 */}
+      <div className="absolute inset-0 pointer-events-none opacity-10 dark:opacity-5">
+        <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:20px_20px]"></div>
+      </div>
+
+      {/* Floating Stock Symbols (사용자 설정에 따라) */}
       <FloatingEmojiBackground />
 
+      {/* Navbar */}
+      <div className="fixed top-0 left-0 right-0 z-[100]">
+        <Navbar />
+      </div>
+
+      {/* Mouse Follower */}
       <MouseFollower />
 
+      {/* Main Content */}
+      <main className="relative z-10 pt-16">
+        {pbId && (
+          <div className="container mx-auto px-4 py-8">
+            {/* 초대 URL 표시 */}
             {inviteUrl && (
               <div className="mb-8">
                 <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-green-200 dark:border-green-800 rounded-lg p-4 shadow-lg">

@@ -70,8 +70,39 @@ export function EditPostModal({ post, isOpen, onClose, onSave }: EditPostModalPr
     <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full max-w-lg max-h-[90vh] mx-4 bg-white dark:bg-gray-800 rounded-lg shadow-2xl overflow-hidden flex flex-col z-[10000]">
+        {/* 헤더 */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            게시글 수정
+          </h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* 스크롤 가능한 내용 영역 */}
         <div className="flex-1 overflow-y-auto">
           <div className="px-4 py-3 space-y-4">
+            {/* 내용 */}
+            <div className="space-y-1">
+              <Label htmlFor="content" className="text-sm font-medium text-gray-900 dark:text-white">
+                내용 *
+              </Label>
+              <Textarea
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="게시글 내용을 입력하세요..."
+                className="min-h-[100px] resize-none text-sm"
+              />
+            </div>
+
+            {/* 이미지 URL */}
             <div className="space-y-1">
               <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-900 dark:text-white">
                 이미지 URL (선택사항)
@@ -95,6 +126,41 @@ export function EditPostModal({ post, isOpen, onClose, onSave }: EditPostModalPr
               </div>
             </div>
 
+            {/* 투자의견 선택 */}
+            <div className="space-y-1">
+              <Label className="text-sm font-medium text-gray-900 dark:text-white">투자 의견</Label>
+              <div className="flex space-x-3">
+                {sentimentOptions.map((option) => {
+                  const Icon = option.icon;
+                  const isSelected = sentiment === option.value;
+                  return (
+                    <Button
+                      key={option.value}
+                      type="button"
+                      variant={isSelected ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSentiment(option.value as PostSentiment)}
+                      className={`${
+                        isSelected
+                          ? option.color
+                          : option.value === "BULLISH"
+                          ? "text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20"
+                          : option.value === "BEARISH"
+                          ? "text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-700 dark:hover:bg-blue-900/20"
+                          : "text-gray-600 border-gray-200 hover:bg-gray-50 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-800"
+                      }`}
+                    >
+                      {Icon && <Icon className="w-4 h-4 mr-2" />}
+                      <span>{option.label}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 고정 푸터 */}
         <div className="flex items-center justify-end space-x-2 px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
           <Button
             type="button"

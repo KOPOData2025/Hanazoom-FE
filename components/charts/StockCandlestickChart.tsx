@@ -40,7 +40,7 @@ export function StockCandlestickChart({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
+  // 차트 데이터 로딩
   const loadChartData = async (period: ChartPeriod) => {
     setLoading(true);
     setError(null);
@@ -50,19 +50,19 @@ export function StockCandlestickChart({
 
       switch (period) {
         case "daily":
-          data = await getDailyChartData(stockSymbol, 2500); 
+          data = await getDailyChartData(stockSymbol, 2500); // 10년치
           break;
         case "weekly":
-          data = await getWeeklyChartData(stockSymbol, 520); 
+          data = await getWeeklyChartData(stockSymbol, 520); // 10년치
           break;
         case "monthly":
-          data = await getMonthlyChartData(stockSymbol, 120); 
+          data = await getMonthlyChartData(stockSymbol, 120); // 10년치
           break;
         default:
-          data = await getDailyChartData(stockSymbol, 2500); 
+          data = await getDailyChartData(stockSymbol, 2500); // 10년치
       }
 
-
+      // 날짜 순으로 정렬
       data.sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
@@ -77,12 +77,12 @@ export function StockCandlestickChart({
     }
   };
 
-
+  // 기간 변경 시 데이터 재로딩
   useEffect(() => {
     loadChartData(selectedPeriod);
   }, [selectedPeriod, stockSymbol]);
 
-
+  // 차트 데이터 포맷팅
   const formatChartData = (data: ChartDataDto[]) => {
     return data.map((item) => ({
       date: new Date(item.date).toLocaleDateString("ko-KR", {
@@ -101,7 +101,7 @@ export function StockCandlestickChart({
 
   const formattedData = formatChartData(chartData);
 
-
+  // 가격 변화 색상 계산
   const getPriceChangeColor = (change: number) => {
     if (change > 0) return "text-red-600 dark:text-red-400";
     if (change < 0) return "text-blue-600 dark:text-blue-400";
@@ -174,6 +174,61 @@ export function StockCandlestickChart({
           />
         </div>
 
+        {/* 요약 정보 */}
+        {chartData.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="text-center">
+              <p className="text-gray-500 dark:text-gray-400">시가</p>
+              <p className="font-semibold">
+                {chartData[0]?.openPrice?.toLocaleString()}원
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-gray-500 dark:text-gray-400">현재가</p>
+              <p className="font-semibold">
+                {chartData[chartData.length - 1]?.closePrice?.toLocaleString()}
+                원
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-gray-500 dark:text-gray-400">변동</p>
+              <div className="flex items-center justify-center gap-1">
+                {getPriceChangeIcon(
+                  chartData[chartData.length - 1]?.priceChange || 0
+                )}
+                <span
+                  className={getPriceChangeColor(
+                    chartData[chartData.length - 1]?.priceChange || 0
+                  )}
+                >
+                  {chartData[
+                    chartData.length - 1
+                  ]?.priceChange?.toLocaleString()}
+                  원
+                </span>
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-gray-500 dark:text-gray-400">변동률</p>
+              <span
+                className={getPriceChangeColor(
+                  chartData[chartData.length - 1]?.priceChange || 0
+                )}
+              >
+                {chartData[chartData.length - 1]?.priceChangePercent?.toFixed(
+                  2
+                )}
+                %
+              </span>
+            </div>
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent>
+        {chartData.length > 0 ? (
+          <div className="space-y-4">
+            {/* 캔들스틱 차트 */}
             <div className="h-64">
               <ChartContainer
                 config={{
@@ -243,3 +298,49 @@ export function StockCandlestickChart({
               </ChartContainer>
             </div>
 
+            {/* 거래량 차트 */}
+            <div className="h-32">
+              <ChartContainer
+                config={{
+                  volume: { color: "#10b981" },
+                }}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={formattedData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="date" stroke="#6b7280" fontSize={10} />
+                    <YAxis
+                      stroke="#6b7280"
+                      fontSize={10}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+                    />
+                    <Tooltip
+                      content={<ChartTooltipContent />}
+                      formatter={(value: number) => [
+                        `${value.toLocaleString()}주`,
+                        "거래량",
+                      ]}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="volume"
+                      stroke="#10b981"
+                      strokeWidth={1}
+                      fill="#10b981"
+                      fillOpacity={0.3}
+                      name="거래량"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            차트 데이터가 없습니다.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

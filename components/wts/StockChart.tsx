@@ -43,10 +43,10 @@ export function StockChart({ stockCode }: StockChartProps) {
   const [timeframe, setTimeframe] = useState("1D");
   const [chartType, setChartType] = useState("line");
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [maxDataPoints] = useState(50); 
+  const [maxDataPoints] = useState(50); // 최대 데이터 포인트 수
   const lastPriceRef = useRef<number>(0);
 
-
+  // 실시간 웹소켓 데이터
   const {
     connected: wsConnected,
     stockData: wsStockData,
@@ -60,10 +60,10 @@ export function StockChart({ stockCode }: StockChartProps) {
     autoReconnect: true,
   });
 
-
+  // 현재 종목 데이터
   const currentStockData = getStockData(stockCode);
 
-
+  // 차트 데이터 업데이트 함수
   const updateChartData = (stockData: StockPriceData) => {
     const currentPrice = parseFloat(stockData.currentPrice);
     const changePrice = parseFloat(stockData.changePrice);
@@ -88,7 +88,7 @@ export function StockChart({ stockCode }: StockChartProps) {
 
     setChartData((prevData) => {
       const newData = [...prevData, newDataPoint];
-
+      // 최대 데이터 포인트 수 제한
       if (newData.length > maxDataPoints) {
         return newData.slice(-maxDataPoints);
       }
@@ -98,26 +98,26 @@ export function StockChart({ stockCode }: StockChartProps) {
     lastPriceRef.current = currentPrice;
   };
 
-
+  // 초기 데이터 로드
   useEffect(() => {
     if (currentStockData && chartData.length === 0) {
       updateChartData(currentStockData);
     }
   }, [currentStockData]);
 
-
+  // 차트 색상 결정
   const getLineColor = () => {
-    if (chartData.length < 2) return "#10b981"; 
+    if (chartData.length < 2) return "#10b981"; // 기본 녹색
     
     const latest = chartData[chartData.length - 1];
     const previous = chartData[chartData.length - 2];
     
-    if (latest.price > previous.price) return "#ef4444"; 
-    if (latest.price < previous.price) return "#3b82f6"; 
-    return "#6b7280"; 
+    if (latest.price > previous.price) return "#ef4444"; // 상승 빨강
+    if (latest.price < previous.price) return "#3b82f6"; // 하락 파랑
+    return "#6b7280"; // 보합 회색
   };
 
-
+  // 커스텀 툴팁
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -199,6 +199,9 @@ export function StockChart({ stockCode }: StockChartProps) {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* 차트 컨트롤 */}
+        <div className="flex flex-wrap gap-2">
+          {/* 시간대 선택 */}
           <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
             {timeframes.map((tf) => (
               <button
@@ -215,6 +218,34 @@ export function StockChart({ stockCode }: StockChartProps) {
             ))}
           </div>
 
+          {/* 차트 타입 선택 */}
+          <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => setChartType("line")}
+              className={`px-3 py-1 rounded transition-all text-xs flex items-center gap-1 ${
+                chartType === "line"
+                  ? "bg-green-600 text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+              }`}
+            >
+              <LineChartIcon className="w-3 h-3" />
+              실시간 틱
+            </button>
+            <button
+              onClick={() => setChartType("candle")}
+              className={`px-3 py-1 rounded transition-all text-xs flex items-center gap-1 ${
+                chartType === "candle"
+                  ? "bg-green-600 text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+              }`}
+            >
+              <BarChart3 className="w-3 h-3" />
+              캔들차트
+            </button>
+          </div>
+        </div>
+
+        {/* 실시간 차트 영역 */}
         <div className="relative h-80 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -238,6 +269,58 @@ export function StockChart({ stockCode }: StockChartProps) {
                 />
                 <Tooltip content={<CustomTooltip />} />
                 
+                {/* 기준선 (전일종가) */}
+                {currentStockData && (
+                  <ReferenceLine 
+                    y={parseFloat(currentStockData.previousClose)} 
+                    stroke="#9ca3af" 
+                    strokeDasharray="2 2"
+                    label={{ value: "전일종가", position: "right" }}
+                  />
+                )}
+                
+                <Line
+                  type="monotone"
+                  dataKey="price"
+                  stroke={getLineColor()}
+                  strokeWidth={2}
+                  dot={{ fill: getLineColor(), strokeWidth: 1, r: 2 }}
+                  activeDot={{ r: 4, stroke: getLineColor(), strokeWidth: 2 }}
+                  connectNulls={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-4">
+                <div className="flex items-end justify-center gap-1 mb-4">
+                  {[...Array(8)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-3 bg-green-400 rounded-t animate-pulse"
+                      style={{
+                        height: `${20 + (i % 3) * 15}px`,
+                        animationDelay: `${i * 200}ms`,
+                      }}
+                    />
+                  ))}
+                </div>
+                
+                <div className="space-y-2">
+                  <Activity className="w-8 h-8 text-green-500 mx-auto animate-pulse" />
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    실시간 데이터 수신 중...
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    웹소켓 연결 후 차트가 자동으로 생성됩니다
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 차트 정보 */}
         <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">데이터 포인트</p>
@@ -279,6 +362,28 @@ export function StockChart({ stockCode }: StockChartProps) {
           </div>
         </div>
 
+        {/* 차트 액션 버튼들 */}
+        <div className="flex gap-2 pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 text-xs"
+            onClick={() => setChartData([])}
+            disabled={chartData.length === 0}
+          >
+            차트 초기화
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 text-xs"
+            disabled
+          >
+            화면 확대
+          </Button>
+        </div>
+
+        {/* 실시간 상태 안내 */}
         {wsConnected ? (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
             <div className="flex items-start gap-2">

@@ -71,6 +71,20 @@ export default function TestSearchPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-8">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* 헤더 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-yellow-500" />
+              Elasticsearch 주식 검색 테스트
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              오타 교정, 형태소 분석, 부분 매칭을 테스트해보세요
+            </p>
+          </CardHeader>
+        </Card>
+
+        {/* 검색창 */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex gap-2">
@@ -91,6 +105,40 @@ export default function TestSearchPage() {
               </Button>
             </div>
 
+            {/* 예시 검색어 */}
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground mb-2">테스트 예시:</p>
+              <div className="flex flex-wrap gap-2">
+                {testQueries.map((test) => (
+                  <Button
+                    key={test.text}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQuery(test.text);
+                      setTimeout(() => handleSearch(), 100);
+                    }}
+                  >
+                    {test.text}
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      ({test.desc})
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 검색 결과 */}
         {results.length > 0 && (
           <Card>
             <CardHeader>
@@ -162,3 +210,30 @@ export default function TestSearchPage() {
           </Card>
         )}
 
+        {/* 안내 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">💡 테스트 가이드</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <div>
+              <strong>✅ 정상 검색:</strong> "삼성전자" → 정확한 결과
+            </div>
+            <div>
+              <strong>🔧 오타 교정:</strong> "삼송전자" → 삼성전자로 교정
+            </div>
+            <div>
+              <strong>🧠 형태소 분석:</strong> "삼성" → 삼성전자, 삼성물산 등
+            </div>
+            <div>
+              <strong>✂️ 부분 매칭:</strong> "성전" → 삼성전자
+            </div>
+            <div>
+              <strong>🎯 심볼 검색:</strong> "005930" → 삼성전자
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

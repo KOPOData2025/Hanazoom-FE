@@ -20,7 +20,7 @@ export interface RegionMarkerProps {
   region: Region;
   onClick: (region: Region) => void;
   isVisible?: boolean;
-  isSelected?: boolean; 
+  isSelected?: boolean; // 선택된 상태 추가
 }
 
 export const RegionMarker = memo(
@@ -28,7 +28,7 @@ export const RegionMarker = memo(
     const { name, latitude, longitude, type } = region;
     const [isHovered, setIsHovered] = useState(false);
 
-
+    // 지역 타입별 아이콘 매핑
     const getRegionIcon = (regionType: string) => {
       switch (regionType) {
         case "CITY":
@@ -42,7 +42,7 @@ export const RegionMarker = memo(
       }
     };
 
-
+    // 스타일을 메모이제이션하여 리렌더링 최적화
     const styles = useMemo(() => {
       const baseScale = isHovered ? "scale-110" : isSelected ? "scale-115" : "scale-100";
       const baseShadow = isSelected
@@ -51,7 +51,7 @@ export const RegionMarker = memo(
         ? "shadow-xl"
         : "shadow-lg";
 
-
+      // 지역 타입별 색상 설정
       const colorSchemes = {
         CITY: {
           primary: isSelected ? "#059669" : "#10b981",
@@ -145,7 +145,7 @@ export const RegionMarker = memo(
     return (
       <CustomOverlayMap
         position={{ lat: latitude, lng: longitude }}
-        yAnchor={1.5} 
+        yAnchor={1.5} // 말풍선 꼬리가 마커 위치를 가리키도록 y축 오프셋 조정 (크기 증가로 조정)
         zIndex={styles.zIndex}
       >
         <div
@@ -164,22 +164,54 @@ export const RegionMarker = memo(
               : "translateZ(0) scale(0.75)",
             opacity: isVisible ? 1 : 0,
             transition: "all 300ms cubic-bezier(0.4, 0, 0.2, 1)",
-
+            // 클릭 영역을 더 크게 만들기 위해 마커 자체를 크게 설정
             minWidth: isSelected ? "140px" : "120px",
             minHeight: isSelected ? "60px" : "50px",
           }}
         >
+          {/* 마커 본체와 꼬다리 컨테이너 */}
+          <div className="relative">
+            {/* 마커 본체 */}
             <div
               className={`relative ${styles.padding} ${styles.fontSize} ${styles.textColor} ${styles.shadow} ${styles.bgColor} backdrop-blur-md rounded-lg border-2 ${styles.borderColor} overflow-hidden`}
               style={{
                 willChange: "transform",
                 transform: "translateZ(0)",
-                minWidth: "max-content", 
+                minWidth: "max-content", // 내용에 따라 크기 조정
               }}
             >
+              {/* 선택된 상태일 때 상단 강조 바 추가 */}
+              {isSelected && (
+                <div
+                  className="absolute top-0 left-0 right-0 h-1"
+                  style={{
+                    background: `linear-gradient(to right, ${styles.primaryColor}, ${styles.primaryColor}dd)`
+                  }}
+                ></div>
+              )}
+
+              {/* 마커 내용 영역 */}
               <div className="flex items-center gap-2">
+                {/* 지역 타입별 아이콘 */}
+                <div className={`${styles.iconColor} flex-shrink-0`}>
+                  {getRegionIcon(type)}
+                </div>
+
+                {/* 지역명 */}
                 <span className="whitespace-nowrap">{name}</span>
 
+                {/* 선택된 상태일 때 추가 아이콘 */}
+                {isSelected && (
+                  <div
+                    className="flex-shrink-0 animate-pulse"
+                    style={{ color: styles.primaryColor }}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
+
+              {/* 선택된 상태 애니메이션 효과 */}
               {isSelected && (
                 <div className="absolute inset-0 rounded-lg">
                   <div
@@ -192,6 +224,18 @@ export const RegionMarker = memo(
                 </div>
               )}
 
+              {/* 호버 효과용 추가 그림자 */}
+              {isHovered && !isSelected && (
+                <div
+                  className="absolute inset-0 rounded-lg animate-pulse"
+                  style={{
+                    backgroundColor: `${styles.primaryColor}20`,
+                  }}
+                ></div>
+              )}
+            </div>
+
+            {/* 마커 꼬다리 부분 */}
             <div
               className="absolute left-1/2 -bottom-[10px] transform -translate-x-1/2 w-0 h-0"
               style={{
@@ -202,3 +246,21 @@ export const RegionMarker = memo(
               }}
             ></div>
 
+            {/* 마커 꼬다리 테두리 */}
+            <div
+              className="absolute left-1/2 -bottom-[10px] transform -translate-x-1/2 w-0 h-0"
+              style={{
+                borderLeft: "11px solid transparent",
+                borderRight: "11px solid transparent",
+                borderTop: `13px solid ${styles.borderColor.split(' ')[1] || styles.primaryColor}`,
+                marginLeft: "-1px",
+              }}
+            ></div>
+          </div>
+        </div>
+      </CustomOverlayMap>
+    );
+  }
+);
+
+RegionMarker.displayName = "RegionMarker";

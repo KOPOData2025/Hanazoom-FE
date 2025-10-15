@@ -51,7 +51,7 @@ export function OpinionForm({ onClose, onSubmit }: OpinionFormProps) {
   };
 
   const removeVoteOption = (id: string) => {
-    if (voteOptions.length <= 2) return; 
+    if (voteOptions.length <= 2) return; // 최소 2개 옵션은 유지
     setVoteOptions(voteOptions.filter((option) => option.id !== id));
   };
 
@@ -165,6 +165,9 @@ export function OpinionForm({ onClose, onSubmit }: OpinionFormProps) {
             </Button>
           </div>
 
+          {/* 투표 기능 토글 */}
+          <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-800/30 dark:to-emerald-800/30 rounded-lg border border-green-200 dark:border-green-600 shadow-sm hover:shadow-md transition-all duration-200">
+            {/* 심플한 토글 버튼 */}
             <button
               type="button"
               onClick={() => setHasVote(!hasVote)}
@@ -172,6 +175,36 @@ export function OpinionForm({ onClose, onSubmit }: OpinionFormProps) {
                 hasVote ? "bg-green-500" : "bg-gray-300 dark:bg-gray-600"
               }`}
             >
+              {/* 토글 핸들 */}
+              <div
+                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-200 transform ${
+                  hasVote ? "translate-x-6" : "translate-x-0.5"
+                }`}
+              />
+            </button>
+
+            <Label
+              htmlFor="vote-toggle"
+              className="flex items-center gap-3 text-sm font-medium text-green-900 dark:text-green-100 cursor-pointer hover:text-green-700 dark:hover:text-green-300 transition-colors duration-200"
+            >
+              <div className="flex items-center justify-center w-8 h-8 bg-green-200 dark:bg-green-700 rounded-full p-1.5">
+                <Vote className="w-5 h-5 text-green-700 dark:text-green-300" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold">투표 기능 추가</span>
+                <span className="text-xs text-green-600 dark:text-green-400">
+                  {hasVote ? "활성화됨" : "클릭하여 활성화"}
+                </span>
+              </div>
+              {hasVote && (
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-green-200 dark:bg-green-700 text-green-800 dark:text-green-200 rounded-full">
+                  ON
+                </span>
+              )}
+            </Label>
+          </div>
+
+          {/* 투표 설정 */}
           {hasVote && (
             <div className="space-y-4 p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/40 dark:to-emerald-900/40 rounded-lg border-2 border-green-200 dark:border-green-700 shadow-lg">
               <div className="flex items-center gap-2 mb-4">

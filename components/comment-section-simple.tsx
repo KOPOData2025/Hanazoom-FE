@@ -108,6 +108,28 @@ export default function CommentSectionSimple({
 
   return (
     <div className={cn("bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700", className)}>
+      {/* 댓글 작성 폼 */}
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <Textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="댓글을 작성해주세요..."
+            className="flex-1 min-h-[60px] resize-none"
+            disabled={isSubmitting}
+          />
+          <Button
+            type="submit"
+            size="sm"
+            disabled={!newComment.trim() || isSubmitting}
+            className="self-end bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </form>
+      </div>
+
+      {/* 댓글 목록 */}
       <div className="max-h-96 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
